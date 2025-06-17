@@ -1,29 +1,37 @@
 import { useState } from "react";
 import logo from "/icons/128.png";
+import textCollector from './collectText.js';
 import "./App.css";
 
 export default function App() {
-    const [info, setInfo] = useState("");
+    const [info, setInfo] = useState("");   // URL, Title, Text
     const [screenshot, setScreenshot] = useState(null);
 
     const handleClick = async () => {
-        try {   // 탭 정보 가져오기
-            const [tab] = await chrome.tabs.query({
+        // 탭 정보 가져오기
+        try {
+            const [{id: tabId, url, title}] = await chrome.tabs.query({
                 active: true,
                 currentWindow: true
             });
 
-            if (tab) {
-                setInfo(`URL: ${tab.url}\n\nTitle: ${tab.title}\n`);
+            // screenshot
+            const imageDataUrl = await chrome.tabs.captureVisibleTab(); // base64 PNG
+            setScreenshot(imageDataUrl);
 
-                // screenshot
-                const imageDataUrl = await chrome.tabs.captureVisibleTab(); // ← base64 PNG
-                setScreenshot(imageDataUrl);
-            }
-            else {
-                setInfo("탭 정보를 찾을 수 없습니다.");
-                setScreenshot(null);
-            }
+//             // 모든 프레임에 textCollector 주입 & 실행
+//             const frames = await chrome.scripting.executeScript({
+//                 target: { tabId, allFrames: true },
+//                 func: textCollector,            // ③ collectTextRaw.js 에서 export한 함수
+//             });
+//
+//             // frames = [{frameId, result: '...'}, ...]  → 결과 합치기
+//             const texts = frames.map(f => f.result)
+//                                 .filter(Boolean)
+//                                 .join('\n\n──────── iframe ────────\n\n');
+//
+//             setInfo(`URL:\n${url}\n\nTitle:\n${title}\n\nText:\n${texts}`);
+            setInfo(`URL:\n${url}\n\nTitle:\n${title}`);
         }
         catch (e) {
             setInfo(`오류: ${e.message}`);
@@ -40,7 +48,8 @@ export default function App() {
             </div>
 
             <div className="card">
-                <strong className='pre-output'>{info}</strong>
+                <button onClick={handleClick}>탭 정보 보기</button>
+
                 {screenshot && (
                     <div style={{ marginTop: "10px" }}>
                         <strong>ScreenShot:</strong>
@@ -51,7 +60,8 @@ export default function App() {
                         />
                     </div>
                 )}
-                <button onClick={handleClick}>탭 정보 보기</button>
+                {/* URL, Title, Text */}
+                <strong className='pre-output'>{info}</strong>
             </div>
         </>
     );

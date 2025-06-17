@@ -6,6 +6,11 @@ export default {
   description: 'React + Vite + MV3',
   version: '0.0.1',
 
+  icons: {
+    '16': 'icons/16.png',
+    '48': 'icons/48.png',
+    '128': 'icons/128.png'
+  },
 
   // ── 사이드패널 기본 경로 ────────────────────
   side_panel: {
@@ -30,13 +35,9 @@ export default {
   // ── 권한 ───────────────────────────────────────
   permissions: [
     'tabs',
-    'sidePanel'
+    'sidePanel',
+    'scripting'
   ],
-  host_permissions: ['<all_urls>'],
+  host_permissions: ['<all_urls>']
 
-  icons: {
-    '16': 'icons/16.png',
-    '48': 'icons/48.png',
-    '128': 'icons/128.png'
-  }
 }
