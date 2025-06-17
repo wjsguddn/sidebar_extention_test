@@ -28,7 +28,10 @@ export default {
   },
 
   // ── 권한 ───────────────────────────────────────
-  permissions: ['tabs', 'sidePanel', 'activeTab'],
+  permissions: [
+    'tabs',
+    'sidePanel'
+  ],
   host_permissions: ['<all_urls>'],
 
   icons: {

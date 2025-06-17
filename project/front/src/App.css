@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+.pre-output {
+    font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap; /* 줄바꿈 예쁘게 처리 */
+}
