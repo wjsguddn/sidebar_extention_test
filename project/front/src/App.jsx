@@ -22,7 +22,7 @@ export default function App() {
             // 모든 프레임에 textCollector 주입 & 실행
             const frames = await chrome.scripting.executeScript({
                 target: { tabId, allFrames: true },
-                func: textCollector,            // ③ collectTextRaw.js 에서 export한 함수
+                func: textCollector,            // collectTextRaw.js 에서 export한 함수
             });
 
             // frames = [{frameId, result: '...'}, ...]  → 결과 합치기
