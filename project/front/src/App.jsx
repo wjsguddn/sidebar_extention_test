@@ -19,19 +19,19 @@ export default function App() {
             const imageDataUrl = await chrome.tabs.captureVisibleTab(); // base64 PNG
             setScreenshot(imageDataUrl);
 
-//             // 모든 프레임에 textCollector 주입 & 실행
-//             const frames = await chrome.scripting.executeScript({
-//                 target: { tabId, allFrames: true },
-//                 func: textCollector,            // ③ collectTextRaw.js 에서 export한 함수
-//             });
-//
-//             // frames = [{frameId, result: '...'}, ...]  → 결과 합치기
-//             const texts = frames.map(f => f.result)
-//                                 .filter(Boolean)
-//                                 .join('\n\n──────── iframe ────────\n\n');
-//
-//             setInfo(`URL:\n${url}\n\nTitle:\n${title}\n\nText:\n${texts}`);
-            setInfo(`URL:\n${url}\n\nTitle:\n${title}`);
+            // 모든 프레임에 textCollector 주입 & 실행
+            const frames = await chrome.scripting.executeScript({
+                target: { tabId, allFrames: true },
+                func: textCollector,            // ③ collectTextRaw.js 에서 export한 함수
+            });
+
+            // frames = [{frameId, result: '...'}, ...]  → 결과 합치기
+            const texts = frames.map(f => f.result)
+                                .filter(Boolean)
+                                .join('\n\n──────── iframe ────────\n\n');
+
+            setInfo(`URL:\n${url}\n\nTitle:\n${title}\n\nText:\n${texts}`);
+ //           setInfo(`URL:\n${url}\n\nTitle:\n${title}`);
         }
         catch (e) {
             setInfo(`오류: ${e.message}`);
