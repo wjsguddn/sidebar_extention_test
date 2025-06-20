@@ -1,6 +1,7 @@
 from confluent_kafka import KafkaException, Consumer
 import os, json, time
 
+
 BOOT = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
 consumer = Consumer({
     "bootstrap.servers": BOOT,
