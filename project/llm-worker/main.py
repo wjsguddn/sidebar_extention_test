@@ -25,6 +25,13 @@ while True:
         print("JSON decode 실패:", e, "| RAW:", msg.value())
         continue
 
-    print("메시지 수신:", data["title"])
+    print("메시지 수신:")
+    print("  URL:", data.get("url", ""))
+    print("  Title:", data.get("title", ""))
+    text = data.get("text", "")
+    text_lines = text.splitlines()
+    print("  Text:")
+    for line in text_lines[:50]:    # llm-worker 로그에 출력할 text 줄수
+        print("   ", line)
     time.sleep(2)
     print("추천 완료 (dummy)\n")
