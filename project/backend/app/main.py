@@ -13,7 +13,7 @@ class CollectReq(BaseModel):
     url: str
     title: str
     text: str
-    screenshot_base64: str
+    screenshot_base64: str = ""
 
 # ----------브라우저 정보 수집
 @app.post("/collect")

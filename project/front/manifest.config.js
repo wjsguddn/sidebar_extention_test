@@ -37,13 +37,14 @@ export default {
     'tabs',
     'sidePanel',
     'scripting',
-    'activeTab'
+    'activeTab',
+    'tabCapture'
   ],
   host_permissions: ['<all_urls>', "http://localhost:8000/*"],
 
   content_scripts: [{
     'matches': ['<all_urls>'],
-    'js': ['src/collectText.js'],
+    'js': ['src/contentReady.js'],
     'run_at': 'document_idle'
   }]
 

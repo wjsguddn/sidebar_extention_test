@@ -29,9 +29,12 @@ while True:
     print("메시지 수신:")
     print("  URL:", data.get("url", ""))
     print("  Title:", data.get("title", ""))
+    screenshot = data.get("screenshot_base64", "")
+    print("  Screenshot:", screenshot[:50] + ("..." if len(screenshot) > 60 else ""))
     text = data.get("text", "")
-    text_lines = text.splitlines()
     print("  Text:")
+    # print(text)     # 텍스트 전체 출력
+    text_lines = text.splitlines()
     for line in text_lines[:50]:    # llm-worker 로그에 출력할 text 줄수
         print("   ", line)
     time.sleep(2)

@@ -4,12 +4,12 @@ import "./App.css";
 
 export default function App() {
     const [info, setInfo] = useState("");   // URL, Title, Text
-    const [screenshot, setScreenshot] = useState(null);
+    const [screenshot, setScreenshot] = useState(null); // 스크린샷 이미지
 
     const handleClick = async () => {
         try {
             // background.js에 수집 요청 메시지 전송
-            chrome.runtime.sendMessage({ type: "COLLECT_ALL" }, (result) => {
+            chrome.runtime.sendMessage({ type: "COLLECT_BY_BUTTON" }, (result) => {
                 if (!result || result.error) {
                     setInfo(`오류: ${result?.error || '수집 실패'}`);
                     setScreenshot(null);
