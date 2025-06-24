@@ -1,54 +1,124 @@
-import { useState } from "react";
-import logo from "/icons/128.png";
+import { useState, useEffect } from "react";
+import DefaultPage from './components/pages/DefaultPage';
+import DocumentSummary from './components/pages/DocumentSummary';
+import YoutubeSummary from './components/pages/YoutubeSummary';
+import Recommendation from './components/pages/Recommendation';
+import SensitivePage from './components/pages/SensitivePage';
+import { PAGE_MODES } from './utils/constants';
 import "./App.css";
 
 export default function App() {
-    const [info, setInfo] = useState("");   // URL, Title, Text
-    const [screenshot, setScreenshot] = useState(null); // 스크린샷 이미지
+    const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
 
-    const handleClick = async () => {
+    // 페이지 모드 감지 함수
+    const detectPageMode = async () => {
         try {
-            // background.js에 수집 요청 메시지 전송
-            chrome.runtime.sendMessage({ type: "COLLECT_BY_BUTTON" }, (result) => {
-                if (!result || result.error) {
-                    setInfo(`오류: ${result?.error || '수집 실패'}`);
-                    setScreenshot(null);
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            const currentTab = tabs[0];
+            if (!currentTab?.url) return;
+
+            const url = currentTab.url;
+            
+            // 민감 정보 페이지 감지
+            if (url.includes('login') || url.includes('signup') || url.includes('signin') || 
+                url.includes('auth') || url.includes('password') || url.includes('account')) {
+                setPageMode(PAGE_MODES.SENSITIVE);
+                return;
+            }
+
+            // 크롬 내부 페이지 감지
+            if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || 
+                url.startsWith('about:') || url.startsWith('moz-extension://')) {
+                setPageMode(PAGE_MODES.DEFAULT);
+                return;
+            }
+
+            // 특정 사이트 감지 (구글, 네이버 등)
+                if (url === 'https://www.google.com' || url === 'https://www.naver.com' ||
+                    url === 'https://www.youtube.com') {
+                    setPageMode(PAGE_MODES.DEFAULT);
                     return;
                 }
-                const { url, title, text, screenshot_base64 } = result;
-                setInfo(`URL:\n${url}\n\nTitle:\n${title}\n\nText:\n${text}`);
-                setScreenshot(screenshot_base64 ? `data:image/png;base64,${screenshot_base64}` : null);
-            });
-        } catch (e) {
-            setInfo(`오류: ${e.message}`);
-            setScreenshot(null);
+
+            // 문서 타입 감지 (PDF, DOC 등)
+            if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
+                setPageMode(PAGE_MODES.DOCUMENT);
+                return;
+            }
+
+            // 유튜브 페이지 감지
+            if (url.includes('youtube.com/watch') || url.includes('youtube.com/shorts')) {
+                setPageMode(PAGE_MODES.YOUTUBE);
+                return;
+            }
+
+            // 기본적으로 추천 모드
+            setPageMode(PAGE_MODES.RECOMMENDATION);
+        } catch (error) {
+            console.error('페이지 모드 감지 실패:', error);
+            setPageMode(PAGE_MODES.DEFAULT);
+        }
+    };
+
+    useEffect(() => {
+        // 초기 페이지 모드 감지
+        detectPageMode();
+
+        // 탭 업데이트 이벤트 리스너
+        const handleTabUpdated = (tabId, changeInfo, tab) => {
+            if (changeInfo.url) {
+                // URL이 변경되면 페이지 모드 재감지
+                setTimeout(detectPageMode, 100); // 약간의 지연을 두어 DOM 업데이트 완료 후 감지
+            }
+        };
+
+        // 탭 활성화 이벤트 리스너
+        const handleTabActivated = (activeInfo) => {
+            // 탭이 변경되면 페이지 모드 재감지
+            setTimeout(detectPageMode, 100);
+        };
+
+        // 이벤트 리스너 등록
+        chrome.tabs.onUpdated.addListener(handleTabUpdated);
+        chrome.tabs.onActivated.addListener(handleTabActivated);
+
+        // 사이드패널 포커스 이벤트 리스너 (사이드패널이 열릴 때마다 감지)
+        const handleSidePanelFocus = () => {
+            detectPageMode();
+        };
+
+        // 사이드패널 포커스 이벤트 등록
+        window.addEventListener('focus', handleSidePanelFocus);
+
+        // 클린업 함수
+        return () => {
+            chrome.tabs.onUpdated.removeListener(handleTabUpdated);
+            chrome.tabs.onActivated.removeListener(handleTabActivated);
+            window.removeEventListener('focus', handleSidePanelFocus);
+        };
+    }, []);
+
+    // 페이지 모드별 컴포넌트 렌더링
+    const renderPage = () => {
+        switch (pageMode) {
+            case PAGE_MODES.DEFAULT:
+                return <DefaultPage />;
+            case PAGE_MODES.DOCUMENT:
+                return <DocumentSummary />;
+            case PAGE_MODES.YOUTUBE:
+                return <YoutubeSummary />;
+            case PAGE_MODES.RECOMMENDATION:
+                return <Recommendation />;
+            case PAGE_MODES.SENSITIVE:
+                return <SensitivePage />;
+            default:
+                return <DefaultPage />;
         }
     };
 
     return (
-        <>
-            <div>
-                <a href="https://app.slack.com/client/T08URE47UKW/C08UHA2JQEA" target="_blank">
-                    <img src={logo} className="logo" alt="logo" />
-                </a>
-            </div>
-
-            <div className="card">
-                <button onClick={handleClick}>탭 정보 보기</button>
-
-                {screenshot && (
-                    <div style={{ marginTop: "10px" }}>
-                        <strong>ScreenShot:</strong>
-                        <img
-                            src={screenshot}
-                            alt="탭 스크린샷"
-                            style={{ maxWidth: "100%", border: "1px solid #ccc", marginTop: "6px", marginBottom: "10px" }}
-                        />
-                    </div>
-                )}
-                {/* URL, Title, Text */}
-                <strong className='pre-output'>{info}</strong>
-            </div>
-        </>
+        <div className="app">
+            {renderPage()}
+        </div>
     );
 }
