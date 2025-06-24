@@ -11,9 +11,6 @@ export default function SensitivePage() {
         <h2>민감한 정보 페이지입니다</h2>
         <p>로그인, 회원가입 등 민감한 정보가 포함된 페이지에서는</p>
         <p>개인정보 보호를 위해 데이터 수집을 하지 않습니다.</p>
-        <div className="security-notice">
-          <p>🔒 보안을 위해 정보 수집이 제한됩니다</p>
-        </div>
       </div>
     </div>
   );

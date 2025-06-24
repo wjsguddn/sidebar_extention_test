@@ -1,6 +1,13 @@
 ## 프로젝트 이슈 및 해결
 
-# Known Issues (unsolved)
+# Known Issues - Unsolved
+
+#### 1. 사이드바가 닫힌 상태에서는 정보 수집 및 전송 중단하도록 변경 예정
+#### 2. 모드 별 collector 필요
+
+---
+
+# Known Issues - Solved
 
 #### 1. 크롬 내부 페이지(chrome://extensions 등)에는 content script가 주입되지 않아 수집 불가(정상)
 #### 2. 여러 트리거 중 마지막만 전송하려면 디바운스 패턴 적용 가능
