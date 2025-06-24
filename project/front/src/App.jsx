@@ -6,6 +6,7 @@ import Recommendation from './components/pages/Recommendation';
 import SensitivePage from './components/pages/SensitivePage';
 import { PAGE_MODES } from './utils/constants';
 import "./App.css";
+import Header from './components/ui/Header';
 
 export default function App() {
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
@@ -117,8 +118,11 @@ export default function App() {
     };
 
     return (
-        <div className="app">
-            {renderPage()}
-        </div>
+        <>
+            <Header />
+            <div className="app">
+                {renderPage()}
+            </div>
+        </>
     );
 }
