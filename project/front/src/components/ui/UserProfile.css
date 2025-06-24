@@ -1,0 +1,16 @@
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  /* background: #eee; */
+  border: none;
+}
+.username {
+  font-size: 13px;
+  color: #e0e0e0;
+} 

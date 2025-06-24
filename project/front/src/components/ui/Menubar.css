@@ -1,0 +1,68 @@
+.menubar {
+  display: flex;
+  gap: 16px;
+}
+.menu-item {
+  color: #333;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.menu-item:hover {
+  background: #f0f0f0;
+}
+
+.menubar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.hamburger {
+  width: 16px;
+  height: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  gap: 5px;
+}
+.hamburger span {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: #ccc;
+  border-radius: 2px;
+  transition: 0.2s;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #242424;
+  border: 1px solid #383838;
+  border-radius: 6px;
+  box-shadow: none;
+  min-width: 120px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+.menu-item {
+  color: #eee;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 20px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.menu-item:hover {
+  background: #333;
+} 
