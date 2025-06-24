@@ -1,0 +1,44 @@
+.sensitive-page {
+  text-align: center;
+  padding: 2rem;
+}
+
+.logo-container {
+  margin-bottom: 2rem;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #ff6b6baa);
+}
+
+.message h2 {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+}
+
+.message p {
+  color: #888;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.security-notice {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.security-notice p {
+  color: #ff6b6b;
+  font-weight: 500;
+  margin: 0;
+} 

@@ -1,0 +1,30 @@
+.default-page {
+  text-align: center;
+  padding: 2rem;
+}
+
+.logo-container {
+  margin-bottom: 2rem;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.message h2 {
+  color: #646cff;
+  margin-bottom: 1rem;
+}
+
+.message p {
+  color: #888;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+} 
