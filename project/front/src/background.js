@@ -22,7 +22,8 @@ function handleAutoCollect(tabId, triggerType) {
     chrome.tabs.get(tabId, (tab) => {
       const url = tab.url;
       const now = Date.now();
-      if (url === lastSentUrl && now - lastSentTime < 3000) {
+      // 3초 이내 동일 url에 대한 연속 요청 무시
+      if (url === lastSentUrl && now - lastSentTime < 5000) {
         debounceTimer = null;
         return;
       }
