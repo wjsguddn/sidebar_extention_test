@@ -3,6 +3,7 @@ import logo from "/icons/128.png";
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import './Recommendation.css';
+import '../ui/CustomScrollbar.css';
 
 export default function Recommendation() {
     const [info, setInfo] = useState("");   // URL, Title, Text
@@ -28,7 +29,7 @@ export default function Recommendation() {
     };
 
     return (
-        <div className="recommendation-page">
+        <div className="recommendation-page custom-scrollbar">
             <div className="logo-section">
                 <a href="https://app.slack.com/client/T08URE47UKW/C08UHA2JQEA" target="_blank">
                     <img src={logo} className="logo" alt="logo" />

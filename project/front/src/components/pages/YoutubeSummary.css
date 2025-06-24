@@ -1,5 +1,7 @@
 .youtube-summary-page {
   padding: 2rem;
+  height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .youtube-summary-page h2 {

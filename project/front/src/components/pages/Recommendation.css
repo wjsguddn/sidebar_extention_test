@@ -1,5 +1,7 @@
 .recommendation-page {
   padding: 2rem;
+  height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .logo-section {
