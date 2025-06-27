@@ -1,5 +1,5 @@
 .recommendation-page {
-  padding: 2rem;
+  padding: 0.7rem;
   height: calc(100vh - 48px);
   overflow-y: auto;
 }

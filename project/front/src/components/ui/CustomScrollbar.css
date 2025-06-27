@@ -1,7 +1,7 @@
 /* 공통 스크롤바 스타일 */
 .custom-scrollbar {
   scrollbar-width: thin;              /* Firefox */
-  scrollbar-color: #444 #242424;      /* Firefox */
+  scrollbar-color: #292e36 #23272f;      /* Firefox */
   /* padding-right: 17px !important; */
 }
 .custom-scrollbar::-webkit-scrollbar {
