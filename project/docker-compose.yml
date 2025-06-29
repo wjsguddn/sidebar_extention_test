@@ -43,3 +43,4 @@ services:
         condition: service_healthy
     environment:
       - KAFKA_BOOTSTRAP=kafka:9092
+      - OPENAI_API_KEY=${OPENAI_API_KEY}

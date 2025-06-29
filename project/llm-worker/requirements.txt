@@ -1,1 +1,3 @@
 confluent_kafka
+openai==0.28
+python-dotenv
