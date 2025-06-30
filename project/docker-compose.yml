@@ -44,3 +44,4 @@ services:
     environment:
       - KAFKA_BOOTSTRAP=kafka:9092
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
