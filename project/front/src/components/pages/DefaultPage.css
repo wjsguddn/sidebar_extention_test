@@ -15,16 +15,16 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em var(--accent-shadow));
 }
 
 .message h2 {
-  color: #909090;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
 .message p {
-  color: #888;
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
   line-height: 1.5;
 } 

@@ -1,14 +1,14 @@
 /* 공통 스크롤바 스타일 */
 .custom-scrollbar {
   scrollbar-width: thin;              /* Firefox */
-  scrollbar-color: #292e36 #23272f;      /* Firefox */
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);      /* Firefox */
   /* padding-right: 17px !important; */
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: #242424;
+  background: var(--scrollbar-track);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #444;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 } 

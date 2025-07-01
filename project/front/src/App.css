@@ -3,7 +3,7 @@
   margin: 0 auto;
   /* padding: 0.2rem 0.6rem; */
   text-align: center;
-  background: #23272f;
+  background: var(--bg-primary);
 }
 
 .app {

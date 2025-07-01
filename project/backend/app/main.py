@@ -29,4 +29,4 @@ async def collect(req: CollectReq, request: Request):
 @app.get("/recommend")
 async def recommend(url: str):
     """URL 1개에 대한 추천 결과 임시 모킹"""
-    return {"url": url, "recommend": ["예시 A", "예시 B"]}
+    return {"url": url, "recommend": ["추천 A", "추천 B", "추천 C", "추천 D", "추천 E"]}

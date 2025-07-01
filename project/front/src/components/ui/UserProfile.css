@@ -12,5 +12,5 @@
 }
 .username {
   font-size: 13px;
-  color: #e0e0e0;
+  color: var(--text-primary);
 } 

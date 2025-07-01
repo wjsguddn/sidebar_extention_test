@@ -5,7 +5,7 @@
 }
 
 .youtube-summary-page h2 {
-  color: #808080;
+  color: var(--text-secondary);
   text-align: center;
   margin: 0;
 } 
