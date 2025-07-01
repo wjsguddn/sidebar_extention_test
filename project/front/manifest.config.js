@@ -2,8 +2,8 @@
 export default {
   // ----------기본 메타
   manifest_version: 3,
-  name: 'My React Extension',          // 확장 이름
-  description: 'React + Vite + MV3',
+  name: 'Penseur Agent',          // 확장 이름
+  description: 'Real-time recommendation browser agent',
   version: '0.0.1',
 
   icons: {
@@ -38,7 +38,8 @@ export default {
     'sidePanel',
     'scripting',
     'activeTab',
-    'tabCapture'
+    'tabCapture',
+    'identity'
   ],
   host_permissions: ['<all_urls>', "http://localhost:8000/*"],
 
