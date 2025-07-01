@@ -1,0 +1,33 @@
+:root {
+    /* 라이트모드 (기본) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --border-color: #e9ecef;
+    --accent-primary: #009E73;
+    --accent-hover: #007A5A;
+    --accent-secondary: #008F6A;
+    --accent-secondary-hover: #006B4E;
+    --accent-shadow: #009E73aa;
+    --button-bg: #f8f9fa;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --scrollbar-track: #ffffff;
+    --scrollbar-thumb: #dee2e6;
+  }
+  
+  [data-theme="dark"] {
+    /* 다크모드 */
+    --bg-primary: #23272f;
+    --bg-secondary: #262a33;
+    --border-color: #2d313a;
+    --accent-primary: #00CE93;
+    --accent-hover: #00B67A;
+    --accent-secondary: #008F6A;
+    --accent-secondary-hover: #007A5A;
+    --accent-shadow: #00CE93aa;
+    --button-bg: #2d313a;
+    --text-primary: rgba(255, 255, 255, 0.87);
+    --text-secondary: #808080;
+    --scrollbar-track: #23272f;
+    --scrollbar-thumb: #292e36;
+  }
