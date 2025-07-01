@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LoginPage from './components/pages/LoginPage';
 import DefaultPage from './components/pages/DefaultPage';
 import DocumentSummary from './components/pages/DocumentSummary';
 import YoutubeSummary from './components/pages/YoutubeSummary';
@@ -119,10 +120,12 @@ export default function App() {
 
     return (
         <>
-            <Header />
+            <LoginPage />
+            {/*<Header />
             <div className="app">
                 {renderPage()}
-            </div>
+                
+            </div>*/}
         </>
     );
 }
