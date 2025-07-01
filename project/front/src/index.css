@@ -56,9 +56,9 @@ button {
 button:hover {
   border-color: var(--accent-primary);
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+button:active {
+  background: rgba(0,0,0,0.08) !important;
 }
 
 @media (prefers-color-scheme: light) {
