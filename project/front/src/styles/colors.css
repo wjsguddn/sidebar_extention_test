@@ -2,11 +2,13 @@
     /* Default */
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
+    --bg-third: #e6f7f1;
+    --shadow-primary: rgba(0,0,0,0.12);
     --border-color: #e9ecef;
     --accent-primary: #009E73;
     --accent-hover: #007A5A;
     --accent-secondary: #008F6A;
-    --accent-secondary-hover: #006B4E;
+    --accent-secondary-hover: #bef1e8;
     --accent-shadow: #009E73aa;
     --button-bg: #f8f9fa;
     --text-primary: #212529;
@@ -19,11 +21,13 @@
     /* 다크모드 */
     --bg-primary: #23272f;
     --bg-secondary: #262a33;
+    --bg-third: #1e2a25;
+    --shadow-primary: rgba(255,255,255,0.08);
     --border-color: #2d313a;
     --accent-primary: #00CE93;
     --accent-hover: #00B67A;
     --accent-secondary: #008F6A;
-    --accent-secondary-hover: #007A5A;
+    --accent-secondary-hover: #39FF14;
     --accent-shadow: #00CE93aa;
     --button-bg: #2d313a;
     --text-primary: rgba(255, 255, 255, 0.87);

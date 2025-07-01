@@ -12,12 +12,7 @@
 }
 
 .ui-button:hover {
-  border-color: var(--accent-primary);
-}
-
-.ui-button:focus,
-.ui-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  border-color: var(--accent-secondary-hover);
 }
 
 .ui-button:disabled {
