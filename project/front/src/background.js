@@ -5,7 +5,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // src/background.js  Manifest v3, Chrome 116+
-const API = import.meta.env.VITE_API_BASE + "/collect";
+const API = import.meta.env.VITE_API_BASE + "/collect/browser";
 
 
 // 전역 단일 디바운스 타이머 및 상태
@@ -60,7 +60,7 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 // 백엔드 전송 함수
 async function sendToBackend(data, triggerType) {
   if (!data) return;
-  const API = import.meta.env.VITE_API_BASE + "/collect";
+  const API = import.meta.env.VITE_API_BASE + "/collect/browser";
   try {
     await fetch(API, {
       method: "POST",
@@ -95,4 +95,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true; // async 응답
   }
+
+
+
 });

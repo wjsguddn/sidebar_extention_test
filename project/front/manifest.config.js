@@ -1,4 +1,3 @@
-// manifest.config.js
 export default {
   // ----------기본 메타
   manifest_version: 3,
@@ -39,7 +38,8 @@ export default {
     'scripting',
     'activeTab',
     'tabCapture',
-    'identity'
+    'identity',
+    'storage'
   ],
   host_permissions: ['<all_urls>', "http://localhost:8000/*"],
 

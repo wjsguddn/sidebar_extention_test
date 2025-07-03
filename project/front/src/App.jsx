@@ -10,7 +10,31 @@ import "./App.css";
 import Header from './components/ui/Header';
 
 export default function App() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
+
+
+    // 로그인 상태 확인
+    useEffect(() => {
+        // 최초 마운트 시 토큰 확인
+        chrome.storage.local.get(['token'], (result) => {
+            setIsLoggedIn(!!result.token);
+        });
+    
+        // storage 변경 감지
+        function handleStorageChange(changes, area) {
+            if (area === "local" && changes.token) {
+                setIsLoggedIn(!!changes.token.newValue);
+            }
+        }
+        chrome.storage.onChanged.addListener(handleStorageChange);
+    
+        // cleanup
+        return () => {
+            chrome.storage.onChanged.removeListener(handleStorageChange);
+        };
+    }, []);
+
 
     // 페이지 모드 감지 함수
     const detectPageMode = async () => {
@@ -117,15 +141,21 @@ export default function App() {
                 return <DefaultPage />;
         }
     };
+    
+
+    // 로그인 상태에 따라 분기
+    if (!isLoggedIn) {
+        return <LoginPage />;
+    }
 
     return (
         <>
-            <LoginPage />
-            {/*<Header />
+            {/*<LoginPage />*/}
+            <Header />
             <div className="app">
                 {renderPage()}
                 
-            </div>*/}
+            </div>
         </>
     );
 }

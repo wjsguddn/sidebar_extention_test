@@ -9,7 +9,7 @@ export const PAGE_MODES = {
 
 // API 엔드포인트
 export const API_ENDPOINTS = {
-  COLLECT: '/collect',
+  COLLECT: '/collect/browser',
   YOUTUBE_SUMMARY: '/youtube-summary',
   DOCUMENT_SUMMARY: '/document-summary'
 }; 
