@@ -2,3 +2,9 @@ fastapi
 uvicorn
 pydantic
 confluent_kafka
+google-auth
+sqlalchemy
+pymysql
+pyjwt
+requests
+cryptography
