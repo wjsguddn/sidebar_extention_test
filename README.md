@@ -9,8 +9,19 @@
 ### 1-1. `/project/.env` (백엔드/워커용)
 
 ```
+KAFKA_BOOTSTRAP=kafka:9092
+
 OPENAI_API_KEY=your_openai_api_key
 PERPLEXITY_API_KEY=your_perplexity_api_key
+
+DATABASE_URL=mysql+pymysql://user:user_password@mysql:3306/penseur_db
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+EXTENSION_ID=your_extension_id
+
+JWT_SECRET_KEY=your_jwt_secret
 ```
 
 ### 1-2. `/project/front/.env` (프론트엔드용)
@@ -18,10 +29,12 @@ PERPLEXITY_API_KEY=your_perplexity_api_key
 - **개발용(.env.local)**
   ```
   VITE_API_BASE=http://localhost:8000
+  VITE_GOOGLE_CLIENT_ID=your_google_client_id
   ```
 - **배포용**
   ```
   VITE_API_BASE=https://your-production-backend-url
+  VITE_GOOGLE_CLIENT_ID=your_google_client_id
   ```
 
 ※ `.env.local` 대신 `.env`도 무관.  
