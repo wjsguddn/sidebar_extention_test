@@ -27,7 +27,7 @@ consumer = Consumer({
     "auto.offset.reset": "earliest",
     "session.timeout.ms": 6000
 })
-consumer.subscribe(["browser.events"])
+consumer.subscribe(["collect.browser"])
 
 
 # GPT generate
