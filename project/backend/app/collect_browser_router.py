@@ -5,7 +5,7 @@ import json, os
 
 collect_browser_router = APIRouter()
 
-BOOT = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
+BOOT = os.getenv("KAFKA_BOOTSTRAP")
 producer = Producer({"bootstrap.servers": BOOT})
 
 class CollectReq(BaseModel):

@@ -5,20 +5,34 @@ import DocumentSummary from './components/pages/DocumentSummary';
 import YoutubeSummary from './components/pages/YoutubeSummary';
 import Recommendation from './components/pages/Recommendation';
 import SensitivePage from './components/pages/SensitivePage';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 import { PAGE_MODES } from './utils/constants';
 import "./App.css";
 import Header from './components/ui/Header';
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
+    // theme 상태가 변경될 때마다 data-theme 속성 설정
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    // theme 토글 함수
+    const toggleTheme = () => {
+        setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    };
 
     // 로그인 상태 확인
     useEffect(() => {
         // 최초 마운트 시 토큰 확인
         chrome.storage.local.get(['token'], (result) => {
             setIsLoggedIn(!!result.token);
+            setIsLoading(false)
         });
     
         // storage 변경 감지
@@ -141,7 +155,11 @@ export default function App() {
                 return <DefaultPage />;
         }
     };
-    
+
+    // 로딩
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     // 로그인 상태에 따라 분기
     if (!isLoggedIn) {
@@ -151,7 +169,7 @@ export default function App() {
     return (
         <>
             {/*<LoginPage />*/}
-            <Header />
+            <Header theme={theme} toggleTheme={toggleTheme} />
             <div className="app">
                 {renderPage()}
                 
