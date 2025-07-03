@@ -2,7 +2,7 @@ import './GoogleLoginButton.css';
 
 const GoogleLoginButton = () => {
   const handleLogin = () => {
-    const clientId = '285174959230-3jq3rj01h2rc183de6196gocpe49c57l.apps.googleusercontent.com';
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const redirectUri = `https://${chrome.runtime.id}.chromiumapp.org/`;
     const scope = 'openid email profile';
     const responseType = 'code';
@@ -20,6 +20,26 @@ const GoogleLoginButton = () => {
         }
         const url = new URL(redirectUrl);
         const code = url.searchParams.get('code');
+
+        if (code) {
+          fetch('http://localhost:8000/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+          })
+          .then(res => res.json())
+          .then(data => {
+            // JWT 저장
+            chrome.storage.local.set({ token: data.token }, () => {
+              // 인증 상태로 전환
+              console.log('로그인 성공:', data);
+            });
+          })
+          .catch(error => {
+            console.error('로그인 실패:', error);
+            alert('로그인 처리 중 오류가 발생했습니다.');
+          });
+        }
       }
     );
   };
@@ -27,9 +47,9 @@ const GoogleLoginButton = () => {
   return (
     <button className="google-login-btn" onClick={handleLogin}>
       <img src="/icons/google_48.png" alt="Google Logo" className="google-logo" />
-      Google로 로그인
+      Google 계정으로 로그인
     </button>
   );
 };
 
-export default GoogleLoginButton; 
+export default GoogleLoginButton;
