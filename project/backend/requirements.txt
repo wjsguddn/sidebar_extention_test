@@ -8,3 +8,4 @@ pymysql
 pyjwt
 requests
 cryptography
+python-jose

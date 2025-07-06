@@ -74,11 +74,11 @@ export default function App() {
             }
 
             // 특정 사이트 감지 (구글, 네이버 등)
-                if (url === 'https://www.google.com' || url === 'https://www.naver.com' ||
-                    url === 'https://www.youtube.com') {
-                    setPageMode(PAGE_MODES.DEFAULT);
-                    return;
-                }
+            if (url === 'https://www.google.com' || url === 'https://www.naver.com' ||
+                url === 'https://www.youtube.com') {
+                setPageMode(PAGE_MODES.DEFAULT);
+                return;
+            }
 
             // 문서 타입 감지 (PDF, DOC 등)
             if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {

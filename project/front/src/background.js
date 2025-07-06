@@ -61,16 +61,23 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 async function sendToBackend(data, triggerType) {
   if (!data) return;
   const API = import.meta.env.VITE_API_BASE + "/collect/browser";
-  try {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, trigger_type: triggerType })
-    });
-    console.log(`[sendToBackend] Data sent (trigger: ${triggerType})`);
-  } catch (e) {
-    console.error("[sendToBackend] Failed", e);
-  }
+  // JWT 읽기
+  chrome.storage.local.get(['token'], async (result) => {
+    const token = result.token;
+    try {
+      await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : undefined
+        },
+        body: JSON.stringify({ ...data, trigger_type: triggerType })
+      });
+      console.log(`[sendToBackend] Data sent (trigger: ${triggerType})`);
+    } catch (e) {
+      console.error("[sendToBackend] Failed", e);
+    }
+  });
 }
 
 

@@ -1,12 +1,9 @@
-from confluent_kafka import KafkaException, Consumer
+from confluent_kafka import KafkaException, Consumer, Producer
 import os, json, time
 import openai
 import requests
 from typing import Dict, List, Optional
-from dotenv import load_dotenv
 
-# .env 파일 로드
-load_dotenv()
 
 # OpenAI API 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -24,11 +21,13 @@ BOOT = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
 consumer = Consumer({
     "bootstrap.servers": BOOT,
     "group.id": "llm-worker",
-    "auto.offset.reset": "earliest",
+    "auto.offset.reset": "latest",
     "session.timeout.ms": 6000
 })
 consumer.subscribe(["collect.browser"])
 
+# Kafka Producer 생성
+producer = Producer({"bootstrap.servers": BOOT})
 
 # GPT generate
 def generate_recommendations(url: str, title: str, text: str) -> Dict:
@@ -243,6 +242,7 @@ def generate_recommendations(url: str, title: str, text: str) -> Dict:
 
 def process_browser_data(data: Dict) -> Dict:
     # 브라우저 데이터 처리 및 추천 생성
+    user_id = data.get("user_id")
     url = data.get("url", "")
     title = data.get("title", "")
     text = data.get("text", "")
@@ -253,7 +253,6 @@ def process_browser_data(data: Dict) -> Dict:
     print("  Title:", title)
     print("  Screenshot:", screenshot[:50] + ("..." if len(screenshot) > 60 else ""))
     print("  Text 길이:", len(text), "문자")
-    
     # 텍스트 미리보기 (처음 200자)
     if text:
         preview = text[:200] + ("..." if len(text) > 200 else "")
@@ -264,6 +263,7 @@ def process_browser_data(data: Dict) -> Dict:
     result_data = generate_recommendations(url, title, text)
     
     result = {
+        "user_id": user_id,
         "url": url,
         "title": title,
         "summary": result_data["summary"],
@@ -282,11 +282,14 @@ def process_browser_data(data: Dict) -> Dict:
         print(f"     URL: {rec.get('url', '')}")
         print(f"     설명2: {rec.get('exp2', '')}")
     print(f"Delay: {result['delay']}")
+
     return result
+
 
 print("LLM 워커 대기중…")
 print("OpenAI API 키 상태:", "설정됨" if openai.api_key else "설정되지 않음")
 print("Perplexity API 키 상태:", "설정됨" if PERPLEXITY_API_URL else "설정되지 않음")
+
 
 while True:
     msg = consumer.poll(1.0)
@@ -304,3 +307,14 @@ while True:
     # 브라우저 데이터 처리 및 추천 생성
     result = process_browser_data(data)
     print("추천 생성 완료.\n")
+
+    # result를 result.browser 토픽으로 produce
+    try:
+        producer.produce(
+            "result.browser",
+            value=json.dumps(result).encode("utf-8")
+        )
+        producer.flush()
+        print("result.browser 토픽에 produce 완료")
+    except Exception as e:
+        print("result.browser 토픽에 전송 실패:", e)
