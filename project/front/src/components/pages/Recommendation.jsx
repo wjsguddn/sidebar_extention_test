@@ -4,12 +4,15 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import './Recommendation.css';
 import '../ui/CustomScrollbar.css';
+import { useWebSocket } from "../../utils/websocketProvider";
 
 export default function Recommendation() {
     const [info, setInfo] = useState("");   // URL, Title, Text
     const [screenshot, setScreenshot] = useState(null); // 스크린샷 이미지
+    const { messages, clearMessages } = useWebSocket();
 
     const handleClick = async () => {
+        clearMessages();
         try {
             // background.js에 수집 요청 메시지 전송
             chrome.runtime.sendMessage({ type: "COLLECT_BY_BUTTON" }, (result) => {
@@ -35,20 +38,8 @@ export default function Recommendation() {
             </div>
 
             <Card>
-                <Button onClick={handleClick} variant="primary">탭 정보 보기</Button>
-
-                {screenshot && (
-                    <div className="screenshot-section">
-                        <strong>ScreenShot:</strong>
-                        <img
-                            src={screenshot}
-                            alt="탭 스크린샷"
-                            className="screenshot-image"
-                        />
-                    </div>
-                )}
-                {/* URL, Title, Text */}
-                <strong className='pre-output'>{info}</strong>
+                <div>{messages.map(msg => msg.content).join("")}</div>
+                <Button onClick={handleClick} variant="primary">추천 생성</Button>
             </Card>
         </div>
     );
