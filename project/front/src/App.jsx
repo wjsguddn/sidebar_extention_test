@@ -7,6 +7,7 @@ import Recommendation from './components/pages/Recommendation';
 import SensitivePage from './components/pages/SensitivePage';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import { PAGE_MODES } from './utils/constants';
+import { WebSocketProvider } from "./utils/websocketProvider";
 import "./App.css";
 import Header from './components/ui/Header';
 
@@ -168,12 +169,12 @@ export default function App() {
 
     return (
         <>
-            {/*<LoginPage />*/}
-            <Header theme={theme} toggleTheme={toggleTheme} />
-            <div className="app">
-                {renderPage()}
-                
-            </div>
+            <WebSocketProvider>
+                <Header theme={theme} toggleTheme={toggleTheme} />
+                <div className="app">
+                    {renderPage()}
+                </div>
+            </WebSocketProvider>
         </>
     );
 }
