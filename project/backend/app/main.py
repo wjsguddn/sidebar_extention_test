@@ -6,7 +6,7 @@ from .routers.websocket_router import router as websocket_router
 from .models import User
 import recommendation_pb2, recommendation_pb2_grpc
 
-#테이블이 없으면 생성, 있으면 무시 (개발환경에서만 사용 권장)
+#테이블이 없으면 생성, 있으면 무시 (개발환경에서만 사용)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
