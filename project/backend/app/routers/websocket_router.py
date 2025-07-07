@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, Query
-from .websocket_manager import websocket_manager
+from ..websocket_manager import websocket_manager
 from jose import jwt, JWTError
 import os
 

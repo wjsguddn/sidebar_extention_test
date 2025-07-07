@@ -34,7 +34,7 @@ function handleAutoCollect(tabId, triggerType) {
       });
       debounceTimer = null;
     });
-  }, 1000);
+  }, 1500);
 }
 
 

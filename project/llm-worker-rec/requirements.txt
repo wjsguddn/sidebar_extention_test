@@ -1,0 +1,4 @@
+openai==0.28
+python-dotenv
+grpcio==1.62.1
+grpcio-tools==1.62.1

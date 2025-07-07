@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Request, Header, HTTPException
 from pydantic import BaseModel
-from confluent_kafka import Producer
 import json, os, jwt
 
-collect_browser_router = APIRouter()
+from ..grpc_clients.rec_client import RecClient
+from ..websocket_manager import websocket_manager
 
-BOOT = os.getenv("KAFKA_BOOTSTRAP")
-producer = Producer({"bootstrap.servers": BOOT})
+
+collect_browser_router = APIRouter()
+rec_client = RecClient()
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")  # 환경변수에서 관리
 
@@ -43,9 +44,15 @@ async def collect_browser(req: CollectReq,
     trigger_type = body.get("trigger_type", "unknown")
     print(f"[COLLECT] trigger_type={trigger_type} url={req.url}", flush=True)
 
-    # Kafka로 user_id 포함해서 전송
-    kafka_data = req.model_dump()
-    kafka_data["user_id"] = user_id
-    producer.produce("collect.browser", json.dumps(kafka_data).encode())
-    producer.flush()
-    return {"status": "queued"}
+
+    data = req.model_dump()
+
+    # gRPC Recommend stream 호출 및 WebSocket 전송
+    async for chunk in rec_client.recommend_stream(user_id, json.dumps(data)):
+        print(chunk, flush=True)
+        await websocket_manager.send_to_user(user_id, {
+            "content": chunk.content,
+            "is_final": chunk.is_final
+        })
+
+    return {"status": "ok"}

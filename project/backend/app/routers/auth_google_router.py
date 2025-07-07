@@ -6,8 +6,8 @@ import requests as py_requests
 import os, jwt
 from datetime import datetime, timedelta
 
-from .db import get_db
-from .models import User
+from ..db import get_db
+from ..models import User
 
 auth_google_router = APIRouter()
 

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package recommendation;
+
+service RecommendationService {
+  rpc Recommend (RecommendRequest) returns (stream RecommendResponse);
+}
+
+message RecommendRequest {
+  string user_id = 1;
+  string browser_context = 2; // 브라우저 수집 정보(JSON 등)
+}
+
+message RecommendResponse {
+  string content = 1; // 추천 결과(스트림 chunk)
+  bool is_final = 2;  // 마지막 chunk 여부
+} 

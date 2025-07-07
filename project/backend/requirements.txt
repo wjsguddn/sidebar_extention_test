@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 pydantic
-confluent_kafka
 google-auth
 sqlalchemy
 pymysql
@@ -9,3 +8,6 @@ pyjwt
 requests
 cryptography
 python-jose
+protobuf==4.25.3
+grpcio==1.62.1
+grpcio-tools==1.62.1

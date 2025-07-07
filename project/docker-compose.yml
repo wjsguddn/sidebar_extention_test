@@ -6,54 +6,20 @@ services:
     ports:
       - "8000:8000"  # 로컬 개발 시 사용 (운영 시 reverse proxy로 대체)
     environment:
-      - KAFKA_BOOTSTRAP=${KAFKA_BOOTSTRAP}
       - DATABASE_URL=${DATABASE_URL}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - EXTENSION_ID=${EXTENSION_ID}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     depends_on:
-      kafka:
-        condition: service_healthy
       mysql:
         condition: service_healthy
-    volumes:
-      - ./backend:/app  # 개발 중 코드 핫리로드용
     env_file:
       - .env
 
-  zookeeper:
-    image: bitnami/zookeeper:latest
+  llm-worker-rec:
+    build: ./llm-worker-rec
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: bitnami/kafka:3.5.1
-    ports:
-      - "9092:9092"  # 내부통신용
-    environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true  # 필요 시 수동 토픽 생성 생략
-    healthcheck:
-      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9092"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  llm-worker:
-    build: ./llm-worker
-    depends_on:
-      kafka:
-        condition: service_healthy
-    environment:
-      - KAFKA_BOOTSTRAP=${KAFKA_BOOTSTRAP}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
     env_file:
