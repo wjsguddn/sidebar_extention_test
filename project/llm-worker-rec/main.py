@@ -201,7 +201,7 @@ class RecommendationService(recommendation_pb2_grpc.RecommendationServiceService
         except Exception as e:
             yield RecommendResponse(content=f"추천 생성 중 오류: {str(e)}", is_final=True)
         finally:
-            del user_tasks[user_id]
+            user_tasks.pop(user_id, None)
 
 async def serve():
     server = grpc.aio.server()
