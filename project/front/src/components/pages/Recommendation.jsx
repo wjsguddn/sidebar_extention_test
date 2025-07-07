@@ -31,9 +31,7 @@ export default function Recommendation() {
     return (
         <div className="recommendation-page custom-scrollbar">
             <div className="logo-section">
-                <a href="https://app.slack.com/client/T08URE47UKW/C08UHA2JQEA" target="_blank">
-                    <img src={logo} className="logo" alt="logo" />
-                </a>
+                <img src={logo} className="logo" alt="logo" />
             </div>
 
             <Card>
