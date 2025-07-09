@@ -30,7 +30,11 @@ function handleAutoCollect(tabId, triggerType) {
       lastSentUrl = url;
       lastSentTime = now;
       collect(tabId).then((data) => {
-        if (data) sendToBackend(data, triggerType);
+        if (data) {
+          // Recommend 페이지에 웹소켓 메시지 초기화 트리거
+          chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
+          sendToBackend(data, triggerType);
+        }
       });
       debounceTimer = null;
     });
