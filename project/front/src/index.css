@@ -53,9 +53,6 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: var(--accent-primary);
-}
 
 button:active {
   background: rgba(0,0,0,0.08) !important;
