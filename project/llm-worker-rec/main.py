@@ -185,10 +185,11 @@ class RecommendationService(recommendation_pb2_grpc.RecommendationServiceService
             url = context_data.get("url", "")
             title = context_data.get("title", "")
             text = context_data.get("text", "")
-            print(f"[gRPC Recommend] user_id={user_id}")
-            print(f"[gRPC Recommend] url={url}")
-            print(f"[gRPC Recommend] title={title}")
-            print(f"[gRPC Recommend] text(앞 300자)={text[:300]} ...")
+            print("[RecommendRequest] 수신")
+            print(f"user_id: {user_id}")
+            print(f"url: {url}")
+            print(f"title: {title}")
+            print(f"text(앞 300자): {text[:300]} ...")
         except Exception as e:
             yield RecommendResponse(content=f"browser_context 파싱 오류: {e}", is_final=True)
             del user_tasks[user_id]
