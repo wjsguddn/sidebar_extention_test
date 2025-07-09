@@ -1,5 +1,5 @@
-import { useState } from "react";
-import logo from "/icons/128.png";
+import { useState, useEffect } from "react";
+import logo from "/icons/p_dot.png";
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import './Recommendation.css';
@@ -10,6 +10,17 @@ export default function Recommendation() {
     const [info, setInfo] = useState("");   // URL, Title, Text
     const [screenshot, setScreenshot] = useState(null); // 스크린샷 이미지
     const { messages, clearMessages } = useWebSocket();
+
+    // background.js에서 RESET_WEBSOCKET_MESSAGE 메시지를 받으면 메시지 초기화
+    useEffect(() => {
+        const listener = (msg, sender, sendResponse) => {
+            if (msg.type === "RESET_WEBSOCKET_MESSAGE") {
+                clearMessages();
+            }
+        };
+        chrome.runtime.onMessage.addListener(listener);
+        return () => chrome.runtime.onMessage.removeListener(listener);
+    }, [clearMessages]);
 
     const handleClick = async () => {
         clearMessages();
@@ -38,7 +49,7 @@ export default function Recommendation() {
             </div>
 
             <Card>
-                <div>{messages.map(msg => msg.content).join("")}</div>
+                <div className="result-section">{messages.map(msg => msg.content).join("")}</div>
                 <Button onClick={handleClick} variant="primary">추천 생성</Button>
             </Card>
         </div>

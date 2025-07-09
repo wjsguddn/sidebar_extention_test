@@ -38,4 +38,9 @@
   white-space: pre-wrap;
   display: block;
   margin-top: 1rem;
-} 
+}
+
+.result-section {
+  width: 100%;
+  text-align: left;
+}

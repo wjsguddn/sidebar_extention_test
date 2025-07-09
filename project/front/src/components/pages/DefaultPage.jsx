@@ -1,4 +1,4 @@
-import logo from "/icons/128.png";
+import logo from "/icons/p_dot.png";
 import './DefaultPage.css';
 
 export default function DefaultPage() {
