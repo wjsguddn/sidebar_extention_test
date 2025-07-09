@@ -37,7 +37,6 @@ const GoogleLoginButton = () => {
           })
           .catch(error => {
             console.error('로그인 실패:', error);
-            alert('로그인 처리 중 오류가 발생했습니다.');
           });
         }
       }
