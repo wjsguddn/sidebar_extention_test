@@ -15,7 +15,13 @@ export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    const getInitialTheme = () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) return savedTheme;
+        // 브라우저/OS 다크모드 감지
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    const [theme, setTheme] = useState(getInitialTheme);
 
     // theme 상태가 변경될 때마다 data-theme 속성 설정
     useEffect(() => {
@@ -164,7 +170,7 @@ export default function App() {
 
     // 로그인 상태에 따라 분기
     if (!isLoggedIn) {
-        return <LoginPage />;
+        return <LoginPage theme={theme} setTheme={setTheme}/>;
     }
 
     return (
