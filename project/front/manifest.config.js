@@ -1,7 +1,7 @@
 export default {
   // ----------기본 메타
   manifest_version: 3,
-  name: 'Penseur Agent',          // 확장 이름
+  name: 'PenseurAI',          // 확장 이름
   description: 'Real-time recommendation browser agent',
   version: '0.0.1',
 
@@ -10,6 +10,13 @@ export default {
     '48': 'icons/48.png',
     '128': 'icons/128.png'
   },
+
+//  web_accessible_resources: [
+//    {
+//      resources: ["icons/*"],
+//      matches: ["<all_urls>"]
+//    }
+//  ],
 
   // ----------사이드패널 기본 경로
   side_panel: {
