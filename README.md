@@ -48,7 +48,8 @@ JWT_SECRET_KEY=your_jwt_secret
 
 ```bash
 cd project/front
-npm install
+npm install         # 초기 한번
+
 npm run dev         # 개발 서버 실행
 # 또는
 npm run build       # 배포용 빌드(dist 폴더 생성)
@@ -63,11 +64,15 @@ npm run build       # 배포용 빌드(dist 폴더 생성)
    윈도우/맥은 Docker Desktop 실행, 리눅스는 Docker 데몬만 실행되어 있으면 됨
 
 
-3. **컨테이너 실행**
+3. **컨테이너 실행 및 종료**
    ```bash
    docker-compose up --build
    ```
    - FastAPI, llm-worker, Kafka, Zookeeper 등 모든 서비스 컨테이너 실행.
+   - 종료시엔 ctrl+c 후에
+   ```bash
+   docker-compose down
+   ```
 
 ---
 
