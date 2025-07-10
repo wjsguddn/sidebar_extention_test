@@ -1,12 +1,12 @@
 /* 공통 스크롤바 스타일 */
 .custom-scrollbar {
   scrollbar-width: thin;              /* Firefox */
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);      /* Firefox */
+  scrollbar-color: var(--scrollbar-thumb) var(--bg-primary);      /* Firefox */
   /* padding-right: 17px !important; */
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
-  background: var(--scrollbar-track);
+  background: var(--bg-primary);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
