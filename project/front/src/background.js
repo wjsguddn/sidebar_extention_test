@@ -1,4 +1,5 @@
 import { collect } from './utils/browserCollector.js';
+import { documentCollector } from './utils/documentCollector.js';
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -103,6 +104,37 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       } else {
         sendResponse({ error: "Collection failed" });
       }
+    });
+    return true; // async 응답
+  }
+  if (msg.type === "DOCS_DETECTED") {
+    chrome.storage.local.get(['token'], async (result) => {
+      const token = result.token;
+      if (!token) {
+        console.log("로그인 필요: PDF 추출 요청을 중단합니다.");
+        return;
+      }
+      (async () => {
+        const pdfUrl = msg.url;
+        const blob = await documentCollector(pdfUrl);
+
+        const formData = new FormData();
+        formData.append("file", blob, "document.pdf");
+        formData.append("fast", "true");
+
+        console.log("FastAPI로 PDF 전송 시작: document.pdf, 크기:", blob.size, "bytes");
+        const response = await fetch("http://localhost:8000/collect/doc", {
+          method: "POST",
+          body: formData
+        });
+
+        console.log("FastAPI 응답 상태:", response.status, response.statusText);
+
+        const result = await response.json();
+        console.log("추출된 텍스트:", result);
+        
+        sendResponse({ status: "PDF processed", result: result });
+      })();
     });
     return true; // async 응답
   }

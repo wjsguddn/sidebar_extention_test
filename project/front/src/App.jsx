@@ -90,6 +90,7 @@ export default function App() {
             // 문서 타입 감지 (PDF, DOC 등)
             if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
                 setPageMode(PAGE_MODES.DOCUMENT);
+                chrome.runtime.sendMessage({ type: "DOCS_DETECTED" , url: url});
                 return;
             }
 

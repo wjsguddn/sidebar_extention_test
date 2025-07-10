@@ -9,10 +9,10 @@ import recommendation_pb2_grpc
 
 
 # OpenAI API 설정
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Perplexity API 설정
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
+# PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
 
 
