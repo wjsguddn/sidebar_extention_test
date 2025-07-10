@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package docssummary;
+
+message DocsSummaryRequest {
+  string user_id = 1;
+  string chunk = 2;
+}
+
+message DocsSummaryResponse {
+  string line = 1;
+}
+
+service DocsSummaryService {
+  rpc SummarizeStream (stream DocsSummaryRequest) returns (stream DocsSummaryResponse);
+}
