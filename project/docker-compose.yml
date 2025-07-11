@@ -31,6 +31,10 @@ services:
     container_name: llm-worker-docs
     ports:
       - "5002:5002"
+    environment:
+      - WATSONX_API_KEY=${WATSONX_API_KEY}
+    env_file:
+      - .env
 
   mysql:
     image: mysql:8.0

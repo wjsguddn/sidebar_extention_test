@@ -3,3 +3,4 @@ transformers
 sentencepiece
 grpcio
 grpcio-tools
+requests

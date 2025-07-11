@@ -108,36 +108,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // async 응답
   }
   if (msg.type === "DOCS_DETECTED") {
-    chrome.storage.local.get(['token'], async (result) => {
-      const token = result.token;
-      if (!token) {
-        console.log("로그인 필요: PDF 추출 요청을 중단합니다.");
-        return;
-      }
-      (async () => {
-        const pdfUrl = msg.url;
-        const blob = await documentCollector(pdfUrl);
 
-        const formData = new FormData();
-        formData.append("file", blob, "document.pdf");
-        formData.append("fast", "true");
+    (async () => {
+      const pdfUrl = msg.url;
+      const blob = await documentCollector(pdfUrl);
 
-        console.log("FastAPI로 PDF 전송 시작: document.pdf, 크기:", blob.size, "bytes");
-        const response = await fetch("http://localhost:8000/collect/doc", {
-          method: "POST",
-          body: formData
-        });
+      const formData = new FormData();
+      formData.append("file", blob, "document.pdf");
+      formData.append("fast", "true");
 
-        console.log("FastAPI 응답 상태:", response.status, response.statusText);
+      const response = await fetch("http://localhost:8000/collect/doc", {
+        method: "POST",
+        body: formData,
+      });
 
-        const result = await response.json();
-        console.log("추출된 텍스트:", result);
-        
-        sendResponse({ status: "PDF processed", result: result });
-      })();
-    });
+      const result = await response.json();
+      console.log("추출된 텍스트:", result);
+      sendResponse({ status: "PDF processed", result: result });
+    })();
     return true; // async 응답
   }
+
+
 
 
 

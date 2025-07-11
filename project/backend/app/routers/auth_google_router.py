@@ -70,7 +70,7 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
     jwt_payload = {
         "user_id": user.id,
         "email": user.email,
-        "exp": datetime.utcnow() + timedelta(hours=1)
+        "exp": datetime.utcnow() + timedelta(hours=24)
     }
     my_jwt = jwt.encode(jwt_payload, JWT_SECRET_KEY, algorithm="HS256")
 

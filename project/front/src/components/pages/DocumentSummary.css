@@ -8,4 +8,16 @@
   color: #808080;
   text-align: center;
   margin: 0;
-} 
+}
+
+.mini-summary-card {
+  margin-bottom: 10px;
+  background: #f8f9fa;
+}
+
+.final-summary-card.emphasized {
+  border: 2px solid #6c63ff;
+  background: #e6e6ff;
+  box-shadow: 0 0 10px #b3b3ff;
+  margin-top: 20px;
+}

@@ -57,7 +57,8 @@ def extract_clean_text(extracted_blocks: list[dict]) -> str:
         # 문단 구분을 위해 빈 줄 삽입
         if block_type in {"section header"}:
             all_texts.append(f"\n{block_text}\n")
-        elif block_type in {"text", "list item"}:
+        # elif block_type in {"text", "list item"}:
+        else:
             all_texts.append(block_text)
 
     # 연속된 줄들 사이에 두 줄 간격 유지 (chunker 친화적)
@@ -66,7 +67,7 @@ def extract_clean_text(extracted_blocks: list[dict]) -> str:
 
 
 
-def chunk_text(text, max_chars=1000, overlap=100):
+def chunk_text(text, max_chars=800, overlap=50):
     sentences = re.split(r'(?<=[.!?。])\s+', text)
     chunks = []
     current_chunk = ""
@@ -88,13 +89,26 @@ def chunk_text(text, max_chars=1000, overlap=100):
         chunks.append(current_chunk.strip())
         print(current_chunk.strip(), '\n\n\n')
 
-    # Overlap 처리
+    # Overlap 처리 - 단어 단위로 깔끔하게 분할
     overlapped_chunks = []
     for i, chunk in enumerate(chunks):
         if i == 0:
             overlapped_chunks.append(chunk)
         else:
-            prev_chunk_tail = chunks[i - 1][-overlap:] if len(chunks[i - 1]) >= overlap else chunks[i - 1]
+            # 이전 청크에서 오버랩할 부분을 단어 단위로 추출
+            prev_chunk = chunks[i - 1]
+            if len(prev_chunk) >= overlap:
+                # overlap 지점부터 시작해서 첫 번째 공백을 찾아 단어 단위로 자르기
+                overlap_start = len(prev_chunk) - overlap
+                # overlap_start 이후의 첫 번째 공백 위치 찾기
+                space_pos = prev_chunk.find(' ', overlap_start)
+                if space_pos != -1:
+                    prev_chunk_tail = prev_chunk[space_pos + 1:]  # 공백 제외하고 가져오기
+                else:
+                    prev_chunk_tail = prev_chunk[overlap_start:]  # 공백이 없으면 그냥 가져오기
+            else:
+                prev_chunk_tail = prev_chunk
+            
             overlapped_chunks.append(prev_chunk_tail + " " + chunk)
 
     return overlapped_chunks
@@ -182,25 +196,90 @@ async def collect_docs(
         if not isinstance(extracted_blocks, list) or len(extracted_blocks) == 0:
             raise HTTPException(status_code=500, detail="Invalid or empty extracted data")
 
-        print('0---------------------')
+        # print('0---------------------')
         joined_text = extract_clean_text(extracted_blocks)
 
         chunks = chunk_text(joined_text)
         print('1---------------------', type(chunks), len(chunks) if chunks else 'None')
 
         # gRPC stream 호출 → WebSocket으로 실시간 전송
+        chunk_list = [] #
+        final_summary = None
+        
         async for chunk in docs_client.docssummary_stream(chunks, user_id):
-            print('gRPC chunk:', chunk)
-            await websocket_manager.send_to_user(user_id, {
-                "type": "summary_chunk",
-                "content": chunk
-            })
-        print('2---------------------')
+            # Final summary인지 확인
+            if chunk.startswith("FINAL_SUMMARY:"):
+                print('FINAL_SUMMARY---------------------------------------------')
+                final_summary = chunk.replace("FINAL_SUMMARY:", "").strip()
+                await websocket_manager.send_to_user(user_id, {
+                    "type": "final_summary",
+                    "content": final_summary
+                })
+                print(f"Final summary received: {final_summary[:100]}...")
+            else:
+                print('CHUNK---------------------------------------------')
+                chunk_list.append(chunk)
+                await websocket_manager.send_to_user(user_id, {
+                    "type": "summary_chunk",
+                    "content": chunk
+                })
+        
+        ## 여기부터 지우면 됨
+
+        # # 전체 요약 결과를 파일에 저장
+        # import os
+        # from datetime import datetime
+        #
+        # # logs 디렉토리 생성 - backend 폴더 기준으로 logs 폴더 생성
+        # current_dir = os.path.dirname(__file__)  # /app/app/routers
+        # backend_dir = os.path.dirname(os.path.dirname(current_dir))  # /app
+        # logs_dir = os.path.join(backend_dir, 'logs')  # /app/logs
+        # if not os.path.exists(logs_dir):
+        #     os.makedirs(logs_dir)
+        #
+        # # 파일명에 타임스탬프 추가
+        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # filename = f"summary_{user_id}_{timestamp}.txt"
+        # filepath = os.path.join(logs_dir, filename)
+        #
+        # with open(filepath, 'w', encoding='utf-8') as f:
+        #     f.write(f"=== 문서 요약 결과 ===\n")
+        #     f.write(f"파일명: {file.filename}\n")
+        #     f.write(f"사용자 ID: {user_id}\n")
+        #     f.write(f"요약 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #     f.write(f"총 청크 수: {len(chunks)}\n")
+        #     f.write(f"요약 결과 수: {len(chunk_list)}\n")
+        #     f.write("=" * 50 + "\n\n")
+        #
+        #     for i, (original_chunk, summary_chunk) in enumerate(zip(chunks, chunk_list)):
+        #         f.write(f"[청크 {i+1}]\n")
+        #         f.write(f"원본: {original_chunk[:200]}...\n")
+        #         f.write(f"요약: {summary_chunk}\n")
+        #         f.write("-" * 30 + "\n\n")
+        #
+        # print(f"요약 결과가 {filepath}에 저장되었습니다.")
+        #
+        # # 간단한 요약 로그도 별도로 저장
+        # simple_log_path = os.path.join(logs_dir, f"simple_summary_{user_id}_{timestamp}.txt")
+        # with open(simple_log_path, 'w', encoding='utf-8') as f:
+        #     f.write(f"=== 간단 요약 로그 ===\n")
+        #     f.write(f"파일: {file.filename}\n")
+        #     f.write(f"시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #     f.write("=" * 30 + "\n\n")
+        #
+        #     for i, summary in enumerate(chunk_list, 1):
+        #         f.write(f"{i}. {summary}\n")
+        #
+        # print(f"간단 요약 로그가 {simple_log_path}에 저장되었습니다.")
+
+        ## 여기까지 지우면 됨
+        
+        print('Websocket_2---------------------')
         await websocket_manager.send_to_user(user_id, {
             "type": "summary_complete",
             "filename": file.filename
         })
-        print('3---------------------')
+        print('Websocket_3---------------------')
 
         return {"status": "ok"}
 
@@ -216,3 +295,4 @@ async def collect_docs(
 # 1. 클라이언트에서 WebSocket 연결
 # 2. 서버에서는 해당 user_id로 gRPC stream을 열고
 # 3. 받은 chunk/token을 WebSocket으로 바로 전송
+
