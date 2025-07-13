@@ -27,7 +27,21 @@ export default function DocumentSummary() {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.type === 'summary_chunk') {
-        setSummaryChunks(prev => [...prev, lastMessage.content]);
+        const chunkIndex = lastMessage.chunk_index ?? null;
+        setSummaryChunks(prev => {
+          if (chunkIndex === 0) {
+            // 0번이면 새 배열로 리셋
+            return [lastMessage.content];
+          } else if (chunkIndex !== null) {
+            // 해당 인덱스만 덮어쓰기
+            const newArr = [...prev];
+            newArr[chunkIndex] = lastMessage.content;
+            return newArr;
+          } else {
+            // 번호 없으면 그냥 추가
+            return [...prev, lastMessage.content];
+          }
+        });
       } else if (lastMessage.type === 'final_summary') {
         setFinalSummary(lastMessage.content);
       }
@@ -74,7 +88,7 @@ export default function DocumentSummary() {
           {finalSummary && (
             <div className="final-summary">
               <Card className="final-summary-card emphasized">
-                <h3>Final Summary (WatsonX Granite)</h3>
+                <h3>Final Summary (WatsonX LLAMA)</h3>
                 <div className="final-summary-content">
                   {finalSummary}
                 </div>

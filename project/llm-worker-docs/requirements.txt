@@ -1,6 +1,8 @@
 torch
 transformers
 sentencepiece
-grpcio
-grpcio-tools
+python-dotenv
+grpcio==1.62.1
+grpcio-tools==1.62.1
 requests
+ibm-watsonx-ai

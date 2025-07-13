@@ -108,24 +108,42 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // async 응답
   }
   if (msg.type === "DOCS_DETECTED") {
+    // 로그인 상태 확인
+    chrome.storage.local.get(['token'], (result) => {
+      const token = result.token;
+      if (!token) {
+        console.log("로그인이 필요합니다. PDF 처리를 건너뜁니다.");
+        sendResponse({ status: "login_required", error: "로그인이 필요합니다." });
+        return;
+      }
 
-    (async () => {
-      const pdfUrl = msg.url;
-      const blob = await documentCollector(pdfUrl);
+      // async 함수를 별도로 정의하여 실행
+      (async () => {
+        try {
+          const pdfUrl = msg.url;
+          const blob = await documentCollector(pdfUrl);
 
-      const formData = new FormData();
-      formData.append("file", blob, "document.pdf");
-      formData.append("fast", "true");
+          const formData = new FormData();
+          formData.append("file", blob, "document.pdf");
+          formData.append("fast", "true");
 
-      const response = await fetch("http://localhost:8000/collect/doc", {
-        method: "POST",
-        body: formData,
-      });
+          const response = await fetch("http://localhost:8000/collect/doc", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            },
+            body: formData,
+          });
 
-      const result = await response.json();
-      console.log("추출된 텍스트:", result);
-      sendResponse({ status: "PDF processed", result: result });
-    })();
+          const result = await response.json();
+          console.log("추출된 텍스트:", result);
+          sendResponse({ status: "PDF processed", result: result });
+        } catch (error) {
+          console.error("PDF 처리 중 오류:", error);
+          sendResponse({ status: "error", error: error.message });
+        }
+      })();
+    });
     return true; // async 응답
   }
 

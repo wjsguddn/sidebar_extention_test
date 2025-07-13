@@ -60,6 +60,17 @@ export default function App() {
     // 페이지 모드 감지 함수
     const detectPageMode = async () => {
         try {
+            // 로그인 상태 확인
+            const result = await new Promise((resolve) => {
+                chrome.storage.local.get(['token'], resolve);
+            });
+            
+            if (!result.token) {
+                // 로그인되지 않은 경우 기본 페이지로 설정
+                setPageMode(PAGE_MODES.DEFAULT);
+                return;
+            }
+
             const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
             const currentTab = tabs[0];
             if (!currentTab?.url) return;
@@ -87,7 +98,7 @@ export default function App() {
                 return;
             }
 
-            // 문서 타입 감지 (PDF, DOC 등)
+            // 문서 타입 감지 (PDF, DOC 등) - 로그인된 경우에만 처리
             if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
                 setPageMode(PAGE_MODES.DOCUMENT);
                 chrome.runtime.sendMessage({ type: "DOCS_DETECTED" , url: url});

@@ -201,28 +201,37 @@ async def collect_docs(
 
         chunks = chunk_text(joined_text)
         print('1---------------------', type(chunks), len(chunks) if chunks else 'None')
+        print('2---------------------', 'user_id:', user_id)
 
         # gRPC stream 호출 → WebSocket으로 실시간 전송
         chunk_list = [] #
         final_summary = None
         
-        async for chunk in docs_client.docssummary_stream(chunks, user_id):
-            # Final summary인지 확인
-            if chunk.startswith("FINAL_SUMMARY:"):
-                print('FINAL_SUMMARY---------------------------------------------')
-                final_summary = chunk.replace("FINAL_SUMMARY:", "").strip()
-                await websocket_manager.send_to_user(user_id, {
-                    "type": "final_summary",
-                    "content": final_summary
-                })
-                print(f"Final summary received: {final_summary[:100]}...")
-            else:
-                print('CHUNK---------------------------------------------')
-                chunk_list.append(chunk)
-                await websocket_manager.send_to_user(user_id, {
-                    "type": "summary_chunk",
-                    "content": chunk
-                })
+        try:
+            print('3---------------------', 'gRPC 호출 시작')
+            i = 0
+            async for chunk in docs_client.docssummary_stream(chunks, user_id):
+                # Final summary인지 확인
+                if chunk.startswith("FINAL_SUMMARY:"):
+                    print('FINAL_SUMMARY---------------------------------------------')
+                    final_summary = chunk.replace("FINAL_SUMMARY:", "").strip()
+                    await websocket_manager.send_to_user(user_id, {
+                        "type": "final_summary",
+                        "content": final_summary
+                    })
+                    print(f"Final summary received: {final_summary[:100]}...")
+                else:
+                    print('CHUNK---------------------------------------------')
+                    chunk_list.append(chunk)
+                    await websocket_manager.send_to_user(user_id, {
+                        "type": "summary_chunk",
+                        "content": chunk,
+                        "chunk_index": i
+                    })
+                    i += 1
+        except Exception as e:
+            print(f'4---------------------', 'gRPC 호출 실패:', str(e))
+            raise HTTPException(status_code=500, detail=f"gRPC call failed: {str(e)}")
         
         ## 여기부터 지우면 됨
 
