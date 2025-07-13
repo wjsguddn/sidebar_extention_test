@@ -1,11 +1,11 @@
 import React from "react";
 import "./UserProfile.css";
 
-const UserProfile = () => {
+const UserProfile = ({userInfo}) => {
   return (
     <div className="user-profile">
-      <img className="avatar" src="/icons/g_purple_profile.jpeg" alt="avatar" />
-      <span className="username">User님 안녕하세요!</span>
+      <img className="avatar" src={userInfo.picture} alt="avatar" />
+      <span className="username">{userInfo.name}</span>님 안녕하세요!
     </div>
   );
 };
