@@ -1,9 +1,10 @@
 @import './styles/colors.css';
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+html, body, :root {
+  font-family: 'Pretendard Variable', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
+  font-size: 13.2px;
 
   color-scheme: light dark;
   color: var(--text-primary);
@@ -25,7 +26,7 @@ a:hover {
 }
 
 body, html, #root, .app {
-  overflow: hidden;
+  /*overflow: hidden;*/
 }
 
 body {
