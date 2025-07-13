@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Menubar.css";
 
-const Menubar = ({ theme, toggleTheme }) => {
+const Menubar = ({ theme, toggleTheme, userInfo }) => {
   const [open, setOpen] = useState(false);
 
   return (
