@@ -66,8 +66,8 @@ def extract_clean_text(extracted_blocks: list[dict]) -> str:
     return joined_text
 
 
-
-def chunk_text(text, max_chars=800, overlap=50):
+#  max_chars=800, overlap=50
+def chunk_text(text, max_chars=1000, overlap=50):
     sentences = re.split(r'(?<=[.!?。])\s+', text)
     chunks = []
     current_chunk = ""

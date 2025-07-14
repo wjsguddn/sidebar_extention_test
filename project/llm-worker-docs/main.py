@@ -1,13 +1,10 @@
 import grpc
-# from concurrent import futures
 import asyncio
 import docssummary_pb2
 import docssummary_pb2_grpc
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
-# import requests as py_requests
-# import json
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -18,9 +15,14 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 
 
 # MT5 모델 (1단계 mini 요약용)
-tokenizer = AutoTokenizer.from_pretrained("google/mt5-small")
-model = AutoModelForSeq2SeqLM.from_pretrained("google/mt5-small")
-model.eval()
+model_name = "csebuetnlp/mT5_multilingual_XLSum"
+
+# tokenizer = AutoTokenizer.from_pretrained("google/mt5-small")
+# model = AutoModelForSeq2SeqLM.from_pretrained("google/mt5-small")
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+# model.eval()
 
 # .env 경로를 project 루트로 지정
 env_path = Path(__file__).resolve().parents[0] / ".env"
@@ -31,13 +33,13 @@ WATSONX_API_KEY = os.getenv("WATSONX_API_KEY")
 WATSONX_PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 
 
-def summarize_mt5(text, max_length=150):
+def summarize_mt5(text, max_length=512):
     try:
         # 입력 텍스트가 너무 짧으면 그대로 반환
         if len(text.strip()) < 30:
             return text.strip()
 
-        # 최대 512토큰까지만 모델에 들어감(더 길면 잘림)
+        # 최대 512토큰까지만 모델에 들어감(더 길면 잘림) - 영어 1800~2000자, 한글 700자~1200자
         input_ids = tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=512)
 
         # 최대 150토큰으로 요약 (더 긴 요약 생성)
@@ -45,7 +47,7 @@ def summarize_mt5(text, max_length=150):
             summary_ids = model.generate(
                 input_ids,
                 max_length=max_length,
-                min_length=30,  # 최소 길이 설정
+                min_length=100,  # 최소 길이 설정
                 num_beams=8,  # 빔 서치 더 증가
                 early_stopping=True,
                 do_sample=False,  # 결정적 생성
@@ -68,6 +70,7 @@ def summarize_mt5(text, max_length=150):
 
         # 요약 품질 검증 - 원본과 너무 다른 경우 처리
         if len(decoded_text.strip()) < 20 or not any(word in text.lower() for word in decoded_text.lower().split()[:3]):
+            print('decoded_text', decoded_text, '\n\n\n'+ '# 원본 텍스트에서 핵심 문장 추출 시도')
             # 원본 텍스트에서 핵심 문장 추출 시도
             sentences = text.split('.')
             if len(sentences) > 1:
@@ -113,74 +116,95 @@ def summarize_with_watsonx(text):
 
         # 프롬프트 구성
         prompt_short = f"""
-        You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
+                You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
 
-        **Summary Guidelines:**
-        - Clearly identify the main topic and purpose of the document
-        - Focus on preserving the most essential information from the content
-        - Include only objective and accurate information
-        - Evaluate the importance of content objectively regardless of section length or keyword density
-        - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
-        - Output must be written in Korean
+                **Summary Guidelines**
+                - Clearly identify the main topic and purpose of the document
+                - Focus on preserving the most essential information from the content
+                - Include only objective and accurate information
+                - Evaluate the importance of content objectively regardless of section length or keyword density
+                - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
+                - Output must be written in Korean
 
-        **Output Format:**
-        - Main Summary/Topic: (1-2 sentence summary of the document's main topic or purpose)
-        - Key Points Summary: (summary of the document's key points)       
-        
-        <Document Start>
-        {text}
-        <Document End>
-        """
+                **Output Format**
+                Output ONLY in the following format without any additional titles or text:
+
+                - Main Summary/Topic: (1-2 sentence summary of the document's main topic or purpose)
+                - Key Points Summary:         
+                    ◦ (Keyword1): (Brief explanation)  
+                    ◦ (Keyword2): (Brief explanation)  
+                    ◦ (Keyword3): (Brief explanation)    
+                ||||
+                <Document Start>
+                {text}
+                <Document End>
+                """
 
         prompt_medium = f"""
-        You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
+                You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
 
-        **Summary Guidelines:**
-        - Clearly identify the main topic and purpose of the document
-        - Extract the top 3 key points with keywords and brief descriptions
-        - Summarize the full content in intro-body-conclusion format within 300 Korean characters
-        - Include only objective and accurate information
-        - Evaluate the importance of content objectively regardless of section length or keyword density
-        - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
-        - Output must be written in Korean
+                **Summary Guidelines:**
+                - Clearly identify the main topic and purpose of the document
+                - Extract the top 3 key points with keywords and brief descriptions
+                - Summarize the full content in intro-body-conclusion format within 300 Korean characters
+                - Include only objective and accurate information
+                - Evaluate the importance of content objectively regardless of section length or keyword density
+                - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
+                - **If the document involves comparison or evaluation of methods, clearly state which method performed best and why**
+                - **Include performance metrics if available**
+                - Output must be written in Korean
 
-        **Output Format:**
-        Please follow this structure exactly and make as markdown form:
-        - Main Summary/Topic: (Summary of the document's main topic or purpose, max 300 characters)
-        - Key Points Summary: (summary of the document's key points)    
-
-        <Document Start>
-        {text}
-        <Document End>
-        """
+                **Output Format:**
+                Main Summary/Topic:  
+                (1–2 sentence summary of the document's main topic or purpose in Korean)
+                Top 3 Key Points:  
+                ◦ (Keyword1): (Brief explanation)  
+                ◦ (Keyword2): (Brief explanation)  
+                ◦ (Keyword3): (Brief explanation)
+                Overall Content Summary:  
+                (Summary of the whole document in Korean, using intro-body-conclusion format, max 300 characters)
+                ||||
+                <Document Start>
+                {text}
+                <Document End>
+                """
 
         prompt_long = f"""
-        You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
+                You are a professional document summarization expert. Please analyze the following document and provide an accurate and concise summary in Korean.
 
-        **Summary Guidelines:**
-        - Clearly identify the main topic and purpose of the document
-        - Extract the top 4 key points with keywords and brief descriptions
-        - Summarize the full content in intro-body-conclusion format within 500 Korean characters
-        - Include only objective and accurate information
-        - Evaluate the importance of content objectively regardless of section length or keyword density
-        - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
-        - Output must be written in Korean
-        
-        **Output Format:**
-        Please follow this structure exactly and make as markdown form:
-        - Main Summary/Topic: (Summary of the document's main topic or purpose, max 500 characters)
-        - Key Points Summary: (summary of the document's key points)    
+                **Summary Guidelines:**
+                - Clearly identify the main topic and purpose of the document
+                - Extract the top 4 key points with keywords and brief descriptions
+                - Summarize the full content in intro-body-conclusion format within 500 Korean characters
+                - Include only objective and accurate information
+                - Evaluate the importance of content objectively regardless of section length or keyword density
+                - **If the document involves comparison or evaluation of methods, clearly state which method performed best and why**
+                - **Include performance metrics if available**
+                - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
+                - Output must be written in Korean
 
-        <Document Start>
-        {text}
-        <Document End>
-        """
+                **Output Format:**
+                Please follow this structure exactly and make as markdown form:
+                Main Summary/Topic:  
+                (1–2 sentence summary of the document's main topic or purpose in Korean)
+                Top 4 Key Points:  
+                ◦ (Keyword1): (Brief explanation)  
+                ◦ (Keyword2): (Brief explanation)  
+                ◦ (Keyword3): (Brief explanation)  
+                ◦ (Keyword4): (Brief explanation)
+                Overall Content Summary:  
+                (Summary of the whole document in Korean, using intro-body-conclusion format, max 500 characters)
+                ||||
+                <Document Start>
+                {text}
+                <Document End>
+                """
 
         # "max_new_tokens": 300은 약 1200~1500자 분량의 출력
         response_json = model.generate(
             prompt=(
                 prompt_short if text_len < 1000 else
-                prompt_medium if text_len < 50000 else
+                prompt_medium if text_len < 5000 else
                 prompt_long
             ),
             params={
@@ -189,13 +213,12 @@ def summarize_with_watsonx(text):
             }
         )
 
-        # response_json = response.json()
 
         try:
             # generated text
             summary = response_json["results"][0]["generated_text"]
-            # summary.strip()
-
+            if "||||" in summary:
+                summary = summary.split("||||")[0].strip()
             return summary
 
         except (KeyError, IndexError) as e:
@@ -262,7 +285,7 @@ async def serve():
     docssummary_pb2_grpc.add_DocsSummaryServiceServicer_to_server(DocsSummaryService(), server)
     server.add_insecure_port('[::]:5002')
     await server.start()
-    print("gRPC DocsSummaryService running on port 5002")
+    print("gRPC DocsSummaryService running on port 5002", flush=True)
     try:
         await server.wait_for_termination()
     except asyncio.CancelledError:
