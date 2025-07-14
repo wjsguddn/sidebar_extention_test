@@ -1,7 +1,6 @@
-// utils/browserCollector.js
-// 브라우저 데이터 수집을 담당하는 모듈 (추천 모드용)
+// 브라우저 데이터 수집 모듈 (추천 모드)
 
-export async function collect(tabId) {
+export async function collectBrowser(tabId) {
   try {
     // 모든 프레임에서 텍스트 수집
     const frames = await chrome.scripting.executeScript({
@@ -56,7 +55,7 @@ export async function collect(tabId) {
       const capture = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
       screenshot_base64 = capture.split(",")[1];
     } catch (e) {
-      console.error("[collect] 스크린샷 캡처 실패", e);
+      console.error("[collectBrowser] 스크린샷 캡처 실패", e);
       screenshot_base64 = "";
     }
     
@@ -68,7 +67,7 @@ export async function collect(tabId) {
       screenshot_base64
     };
   } catch (e) {
-    console.error("[collect] Unexpected error", e);
+    console.error("[collectBrowser] Unexpected error", e);
     return null;
   }
 } 
