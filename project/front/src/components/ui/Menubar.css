@@ -102,7 +102,7 @@
   border-radius: 50%;
 }
 .theme-toggle-switch input:checked + .slider:before {
-  transform: translateX(16px);
+  transform: translateX(17px);
 }
 
 .menubar-container .dropdown-menu {
@@ -118,9 +118,7 @@
   /*color: var(--bg-primary);*/
 }
 
-
-
 .dropdown-menu {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-} 
+}
