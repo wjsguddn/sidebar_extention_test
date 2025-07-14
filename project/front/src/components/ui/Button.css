@@ -12,8 +12,8 @@
   transition: border-color 0.25s, background-color 0.25s;
 }
 
-.ui-button:hover {
-}
+/* .ui-button:hover {
+} */
 
 .ui-button:disabled {
   opacity: 0.5;
@@ -28,7 +28,7 @@
 .ui-button.primary:hover {
   background: var(--button-bg-hover);
   border: 1px solid var(--button-bd-hover);
-  box-shadow: 0 4px 16px var(--shadow-primary);
+  box-shadow: 0 0 16px var(--shadow-primary);
 }
 
 .ui-button.secondary {
