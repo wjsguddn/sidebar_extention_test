@@ -8,13 +8,16 @@ chrome.runtime.onInstalled.addListener(() => {
 // src/background.js  Manifest v3, Chrome 116+
 const API = import.meta.env.VITE_API_BASE + "/collect/browser";
 
+let autoRefreshEnabled = false;
+
 // 전역 단일 디바운스 타이머 및 상태
 let debounceTimer = null;
 // url 이벤트 윈도우 관리
 let lastSentUrl = null;
 let lastSentTime = 0;
-// 자동 수집 트리거 관리: handleBrowserAutoCollect
+// 추천모드 자동 수집 트리거 관리: handleBrowserAutoCollect
 function handleBrowserAutoCollect(tabId, triggerType) {
+  if (!autoRefreshEnabled) return;
   if (debounceTimer) {
     clearTimeout(debounceTimer);
   }
@@ -22,16 +25,14 @@ function handleBrowserAutoCollect(tabId, triggerType) {
     chrome.tabs.get(tabId, (tab) => {
       const url = tab.url;
       const now = Date.now();
-
       // 페이지 모드 감지
-      console.log(url);
+      // console.log(url);
       const mode = getPageMode(url);
-      console.log(mode);
+      // console.log(mode);
       if (mode !== "recommendation") {
         debounceTimer = null;
         return;
       }
-
       // 10초 이내 동일 url에 대한 연속 요청 무시
       if (url === lastSentUrl && now - lastSentTime < 10000) {
         debounceTimer = null;
@@ -39,7 +40,6 @@ function handleBrowserAutoCollect(tabId, triggerType) {
       }
       lastSentUrl = url;
       lastSentTime = now;
-
       // 데이터 수집 및 전송
       collectBrowser(tabId).then((data) => {
         if (data) {
@@ -111,6 +111,10 @@ async function sendToBackend(data, triggerType) {
 
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // 자동 갱신 토글
+  if (msg.type === "AUTO_REFRESH_ENABLED") {
+    autoRefreshEnabled = msg.value;
+  }
 // DOM 준비: content_script에서 CONTENT_READY 메시지
   if (msg.type === "CONTENT_READY" && sender.tab && sender.tab.id) {
     handleBrowserAutoCollect(sender.tab.id, 'content_ready');

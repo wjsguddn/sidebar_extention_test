@@ -5,6 +5,7 @@ import Card from '../ui/Card';
 import './Recommendation.css';
 import '../ui/CustomScrollbar.css';
 import { useWebSocket } from "../../utils/websocketProvider";
+// import { PAGE_MODES } from '../../utils/constants';
 
 const CARD_REGEX = /__(COMMENT|SUMMARY|RECOMMEND)\|\|\|/g;
 
@@ -88,7 +89,7 @@ export function RecommendationFooterContent({ onClick }) {
           {tabInfo.title}
         </span>
       </div>
-      <span className="gen_rec_text" style={{ marginLeft: 8, fontWeight: 500 }}>
+      <span className="gen_rec_text" style={{ marginLeft: 8 }}>
         추천 생성
       </span>
     </Button>
@@ -129,12 +130,12 @@ export default function Recommendation({ setFooterClick }) {
     }
   }, [clearMessages]);
 
-  // Footer 버튼 핸들러를 App에 연결
+// Footer 버튼 핸들러를 App에 연결
   useEffect(() => {
     if (setFooterClick) {
       setFooterClick(() => handleClick);
     }
-  }, [setFooterClick, handleClick]);
+  }, [setFooterClick]);
 
   const fullText = messages.map(msg => msg.content).join("");
   const rawCards = splitStreamCards(fullText);
