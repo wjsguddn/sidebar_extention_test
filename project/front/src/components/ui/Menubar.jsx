@@ -20,7 +20,7 @@ const Menubar = ({ theme, toggleTheme, userInfo }) => {
           <a href="#" className="menu-item">프로필 관리</a>
           <a href="#" className="menu-item">설정</a>
           <div className="menu-item" style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            다크모드
+            다크 모드
             <label className="theme-toggle-switch">
               <input type="checkbox" checked={theme === 'dark'} onChange={toggleTheme} />
               <span className="slider"></span>
