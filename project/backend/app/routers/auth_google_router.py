@@ -16,13 +16,25 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 EXTENSION_ID = os.getenv("EXTENSION_ID")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
-def get_or_create_user(db, email, sub):
+def get_or_create_user(db, email, sub, name=None, picture=None):
     user = db.query(User).filter(User.id == sub).first()
     if not user:
-        user = User(id=sub, email=email)
+        user = User(id=sub, email=email, name=name, picture=picture)
         db.add(user)
         db.commit()
         db.refresh(user)
+    else:
+        # 프로필 정보 갱신
+        updated = False
+        if user.name != name:
+            user.name = name
+            updated = True
+        if user.picture != picture:
+            user.picture = picture
+            updated = True
+        if updated:
+            db.commit()
+            db.refresh(user)
     return user
 
 @auth_google_router.post("/auth/google")
@@ -60,16 +72,21 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
 
     email = idinfo.get("email")
     sub = idinfo.get("sub")
+    name = idinfo.get("name")
+    picture = idinfo.get("picture")
+
     if not email or not sub:
         raise HTTPException(status_code=400, detail="Invalid user info")
 
     # DB에서 사용자 조회/생성
-    user = get_or_create_user(db, email, sub)
+    user = get_or_create_user(db, email, sub, name, picture)
 
     # JWT 발급
     jwt_payload = {
         "user_id": user.id,
         "email": user.email,
+        "name": user.name,
+        "picture": user.picture,
         "exp": datetime.utcnow() + timedelta(hours=24)
     }
     my_jwt = jwt.encode(jwt_payload, JWT_SECRET_KEY, algorithm="HS256")

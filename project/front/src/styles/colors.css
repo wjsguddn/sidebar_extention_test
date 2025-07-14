@@ -1,37 +1,73 @@
-:root {
-    /* Default */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-third: #e6f7f1;
-    --shadow-primary: rgba(0,0,0,0.12);
-    --border-color: #e9ecef;
-    --accent-primary: #009E73;
-    --accent-hover: #007A5A;
-    --accent-secondary: #008F6A;
-    --accent-secondary-hover: #bef1e8;
-    --accent-shadow: #009E73aa;
-    --button-bg: #f8f9fa;
-    --text-primary: #212529;
-    --text-secondary: #6c757d;
-    --scrollbar-track: #ffffff;
-    --scrollbar-thumb: #dee2e6;
+@import './styles/colors.css';
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+html, body, :root {
+  font-family: 'Pretendard Variable', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-size: 13.2px;
+
+  color-scheme: light dark;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: var(--accent-primary);
+  text-decoration: inherit;
+}
+a:hover {
+  color: var(--accent-hover);
+}
+
+body, html, #root, .app {
+  /*overflow: hidden;*/
+}
+
+body {
+  margin: 0;
+  /* display: flex; */
+  /* place-items: center; */
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:active {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
   }
-  
-  [data-theme="dark"] {
-    /* 다크모드 */
-    --bg-primary: #23272f;
-    --bg-secondary: #262a33;
-    --bg-third: #1e2a25;
-    --shadow-primary: rgba(255,255,255,0.08);
-    --border-color: #2d313a;
-    --accent-primary: #00CE93;
-    --accent-hover: #00B67A;
-    --accent-secondary: #008F6A;
-    --accent-secondary-hover: #8fbf86;
-    --accent-shadow: #00CE93aa;
-    --button-bg: #2d313a;
-    --text-primary: rgba(255, 255, 255, 0.87);
-    --text-secondary: #808080;
-    --scrollbar-track: #23272f;
-    --scrollbar-thumb: #292e36;
+  a:hover {
+    color: var(--accent-hover);
   }
+  button {
+    background-color: var(--button-bg);
+  }
+}

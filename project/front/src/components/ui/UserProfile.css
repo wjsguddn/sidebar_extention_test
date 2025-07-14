@@ -1,7 +1,6 @@
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 .avatar {
   width: 18px;
@@ -9,8 +8,10 @@
   border-radius: 50%;
   /* background: #eee; */
   border: none;
+  margin-right: 8px;
 }
 .username {
-  font-size: 13px;
+  font-size: 1em;
   color: var(--text-primary);
-} 
+  font-weight: 500;
+}

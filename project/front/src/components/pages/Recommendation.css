@@ -5,42 +5,74 @@
 }
 
 .logo-section {
+  position: relative;
+  z-index: 0;
   text-align: center;
-  margin-bottom: 2rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
+.recommendation-page .logo {
+  vertical-align: bottom;
+  padding: 0;
+  width: 130px;
+  height: 130px;
   will-change: filter;
   transition: filter 300ms;
-  border-radius: 50%;
 }
 
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
 
-.screenshot-section {
-  margin-top: 10px;
+.result-section {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  text-align: left;
+  padding-bottom: 40px;
 }
 
-.screenshot-image {
-  max-width: 100%;
-  border: 1px solid #ccc;
-  margin-top: 6px;
+
+.card-comment {
+  background-color: var(--bg-comment);
+  filter: drop-shadow(0 0 0.2em var(--text-primary));
+}
+
+.card-summary {
+  background-color: var(--accent-primary);
+  filter: drop-shadow(0 0 0.2em var(--text-primary));
+  border: 1px solid var(--accent-secondary);
+  font-weight:700;
+}
+
+.card-recommend .card-title {
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.card-recommend .card-desc1 {
   margin-bottom: 10px;
 }
 
-.pre-output {
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  display: block;
-  margin-top: 1rem;
+.card-recommend .card-desc2 {
+  margin-bottom: 5px;
 }
 
-.result-section {
-  width: 100%;
-  text-align: left;
+.card-recommend .card-url {
+  font-size: 0.9em;
+}
+
+.rec-button {
+  border-radius: 15px;
+  padding: 0.8em 1.2em;
+  width: 62%;
+}
+
+.rec-button div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rec-button .gen_rec_text {
+  color: var(--accent-primary);
 }

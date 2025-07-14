@@ -1,7 +1,7 @@
 // 페이지 모드 타입
 export const PAGE_MODES = {
   DEFAULT: 'default',
-  DOCUMENT: 'document', 
+  DOCUMENT: 'document',
   YOUTUBE: 'youtube',
   RECOMMENDATION: 'recommendation',
   SENSITIVE: 'sensitive'
@@ -10,6 +10,6 @@ export const PAGE_MODES = {
 // API 엔드포인트
 export const API_ENDPOINTS = {
   COLLECT: '/collect/browser',
-  YOUTUBE_SUMMARY: '/youtube-summary',
-  DOCUMENT_SUMMARY: '/document-summary'
-}; 
+  YOUTUBE_SUMMARY: '/collect/youtube',
+  DOCUMENT_SUMMARY: '/collect/document'
+};
