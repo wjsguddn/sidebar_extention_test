@@ -113,7 +113,7 @@ export default function Recommendation({ setFooterClick }) {
   const handleClick = useCallback(async () => {
     clearMessages();
     try {
-      chrome.runtime.sendMessage({ type: "COLLECT_BY_BUTTON" }, (result) => {
+      chrome.runtime.sendMessage({ type: "COLLECT_BROWSER_BY_BUTTON" }, (result) => {
         if (!result || result.error) {
           setInfo(`오류: ${result?.error || '수집 실패'}`);
           setScreenshot(null);
