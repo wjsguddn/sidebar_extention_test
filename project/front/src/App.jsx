@@ -11,6 +11,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner';
 import { parseJwt } from './utils/jwtUtils';
 import { PAGE_MODES } from './utils/constants';
 import { WebSocketProvider } from "./utils/websocketProvider";
+import { getPageMode } from './utils/pageMode';
 import "./App.css";
 
 export default function App() {
@@ -71,30 +72,9 @@ export default function App() {
             const currentTab = tabs[0];
             if (!currentTab?.url) return;
             const url = currentTab.url;
-            if (url.includes('login') || url.includes('signup') || url.includes('signin') || 
-                url.includes('auth') || url.includes('password') || url.includes('account')) {
-                setPageMode(PAGE_MODES.SENSITIVE);
-                return;
-            }
-            if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || 
-                url.startsWith('about:') || url.startsWith('moz-extension://')) {
-                setPageMode(PAGE_MODES.DEFAULT);
-                return;
-            }
-            if (url === 'https://www.google.com' || url === 'https://www.naver.com' ||
-                url === 'https://www.youtube.com') {
-                setPageMode(PAGE_MODES.DEFAULT);
-                return;
-            }
-            if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
-                setPageMode(PAGE_MODES.DOCUMENT);
-                return;
-            }
-            if (url.includes('youtube.com/watch') || url.includes('youtube.com/shorts')) {
-                setPageMode(PAGE_MODES.YOUTUBE);
-                return;
-            }
-            setPageMode(PAGE_MODES.RECOMMENDATION);
+            const mode = getPageMode(url);
+
+            setPageMode(PAGE_MODES[mode.toUpperCase()]);
         } catch (error) {
             console.error('페이지 모드 감지 실패:', error);
             setPageMode(PAGE_MODES.DEFAULT);
@@ -116,11 +96,11 @@ export default function App() {
         const handleSidePanelFocus = () => {
             detectPageMode();
         };
-        window.addEventListener('focus', handleSidePanelFocus);
+//         window.addEventListener('focus', handleSidePanelFocus);
         return () => {
             chrome.tabs.onUpdated.removeListener(handleTabUpdated);
             chrome.tabs.onActivated.removeListener(handleTabActivated);
-            window.removeEventListener('focus', handleSidePanelFocus);
+//             window.removeEventListener('focus', handleSidePanelFocus);
         };
     }, []);
 
