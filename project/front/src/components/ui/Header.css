@@ -2,9 +2,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 92%;
-  height: 48px;
-  padding-left: 13px;
+  width: 100%;
+  height: 45px;
+  /*padding-left: 13px;*/
   background: var(--bg-primary);
   /*border-bottom: 1px solid var(--border-color);*/
   box-shadow: none;
