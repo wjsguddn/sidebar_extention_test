@@ -21,7 +21,7 @@ export function getPageMode(url) {
   if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
     return "document";
   }
-  if (url.includes('youtube.com/watch') || url.includes('youtube.com/shorts')) {
+  if (url.includes('youtube.com/watch')) {
     return "youtube";
   }
   return "recommendation";
