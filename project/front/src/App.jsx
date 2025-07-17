@@ -20,7 +20,7 @@ export default function App() {
     const [userInfo, setUserInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
-    const lastNonDefaultMode = useRef(PAGE_MODES.DEFAULT);
+    const [lastMode, setLastMode] = useState(PAGE_MODES.DEFAULT);
     const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
     const getInitialTheme = () => {
         const savedTheme = localStorage.getItem('theme');
@@ -41,14 +41,14 @@ export default function App() {
 
     useEffect(() => {
         chrome.storage.local.get(['autoRefreshEnabled'], (result) => {
-          if (typeof result.autoRefreshEnabled === 'boolean') {
-            setAutoRefreshEnabled(result.autoRefreshEnabled);
-          }
+            if (typeof result.autoRefreshEnabled === 'boolean') {
+                setAutoRefreshEnabled(result.autoRefreshEnabled);
+            }
         });
-      }, []);
+    }, []);
       
-      // 상태 변경 시 저장
-      useEffect(() => {
+    // 상태 변경 시 저장
+    useEffect(() => {
         chrome.storage.local.set({ autoRefreshEnabled });
     }, [autoRefreshEnabled]);
 
@@ -121,18 +121,18 @@ export default function App() {
         };
     }, []);
 
-    //si bal
+    //si
     useEffect(() => {
         if (autoRefreshEnabled) {
-          lastNonDefaultMode.current = pageMode;
+            setLastMode(pageMode);
         } else if (pageMode === PAGE_MODES.DEFAULT) {
-          lastNonDefaultMode.current = PAGE_MODES.DEFAULT;
-        } else if (lastNonDefaultMode.current === PAGE_MODES.DEFAULT) {
-          lastNonDefaultMode.current = pageMode;
+            setLastMode(PAGE_MODES.DEFAULT);
+        } else if (lastMode === PAGE_MODES.DEFAULT) {
+            setLastMode(pageMode);
         }
     }, [pageMode, autoRefreshEnabled]);
 
-    // 자동갱신 토글 상태 background로 전달
+    // AutoMode 토글 상태 background로 전달
     useEffect(() => {
         chrome.runtime.sendMessage({ type: "AUTO_REFRESH_ENABLED", value: autoRefreshEnabled });
     }, [autoRefreshEnabled]);
@@ -159,7 +159,7 @@ export default function App() {
         }
     };
 
-    // sibal
+
     // auto false용 페이지 렌더
     const renderPage2 = (mode) => {
         switch (mode) {
@@ -196,14 +196,14 @@ export default function App() {
         if (pageMode === PAGE_MODES.DEFAULT) {
             pageToRender = renderPage2(PAGE_MODES.DEFAULT);
             // setState는 렌더 중 직접 호출 시 문제유발 가능. useEffect로 관리
-            // setLastNonDefaultMode(PAGE_MODES.DEFAULT); 
+            // setLastMode(PAGE_MODES.DEFAULT);
         }
-        else if (lastNonDefaultMode.current === PAGE_MODES.DEFAULT) {
+        else if (lastMode === PAGE_MODES.DEFAULT) {
             pageToRender = renderPage2(pageMode);
-            // setLastNonDefaultMode(pageMode); // 마찬가지
+            // setLastMode(pageMode); // 마찬가지
         }
         else {
-            pageToRender = renderPage2(lastNonDefaultMode.current);
+            pageToRender = renderPage2(lastMode);
         }
     }
 
@@ -219,7 +219,8 @@ export default function App() {
                         <Footer>
                             {pageMode === PAGE_MODES.RECOMMENDATION && (
                                 <RecommendationFooterContent
-                                onClick={recommendationFooterClick}/>
+                                onClick={recommendationFooterClick}
+                                setLastMode={setLastMode}/>
                             )}
                             <AutoRefreshToggleButton enabled={autoRefreshEnabled}
                                 onToggle={() => setAutoRefreshEnabled(e => !e)}/>
