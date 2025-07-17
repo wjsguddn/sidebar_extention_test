@@ -26,7 +26,7 @@
     opacity: 0;
     position: absolute;
     right: 0px;
-    bottom: 58px;
+    bottom: 60px;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);

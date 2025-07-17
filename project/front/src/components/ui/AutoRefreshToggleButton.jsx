@@ -11,7 +11,7 @@ export default function AutoRefreshToggleButton({ enabled, onToggle }) {
       <Button className={`auto-refresh-toggle-btn${enabled ? " enabled" : ""}`}
         onClick={onToggle}>
         <img src={iconSrc}
-        style={{ width: 30, height: 30, marginLeft: "3px", marginBottom: "3px" }}/>
+        style={{ width: 30, height: 30, marginLeft: "3px", marginBottom: "2px" }}/>
         <span className="tooltip">
           {enabled ? "AutoMode 비활성화" : "AutoMode 활성화"}
         </span>
