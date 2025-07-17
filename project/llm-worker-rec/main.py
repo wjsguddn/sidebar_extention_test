@@ -34,12 +34,12 @@ __RECOMMEND|||...(동일 포맷 4번 더 반복, 총 5개의 RECOMMEND)
 절대 항목 타입, 필드 구분자(`|||`), 필드 순서/개수를 어기지 말 것.
 """
 
-# OpenAI API 설정
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# Perplexity API 설정
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
+# # OpenAI API 설정
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+#
+# # Perplexity API 설정
+# PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
+# PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
 
 # 유저별 작업 관리
 user_tasks = {}
