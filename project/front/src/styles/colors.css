@@ -15,6 +15,7 @@
     --button-bg: #f8f9fa;
     --text-primary: #212529;
     --text-secondary: #6c757d;
+    --text-logout: #303030;
     --scrollbar-thumb: #dee2e6;
     --scrollbar-thumb-hover: #EDF2FA;
   }
@@ -32,11 +33,12 @@
     --accent-secondary: #B3FFE0;
     --accent-secondary-hover: #8fbf86;
     --accent-shadow: #00CE93aa;
-    --button-bg: #000000;/*#1B2020;*/
+    --button-bg: #151515;/*#1B2020;*/
     --button-bg-hover: rgb(10, 22, 17);
     --button-bd-hover: rgb(93, 141, 84);
     --text-primary: rgba(255, 255, 255, 0.87);
     --text-secondary: #808080;
+    --text-logout: #aaa;
     --scrollbar-thumb: #1F2020;
     --scrollbar-thumb-hover: #3C3C3C;
   }
