@@ -7,7 +7,7 @@ const GoogleLoginButton = () => {
     const scope = 'openid email profile';
     const responseType = 'code';
     const state = Math.random().toString(36).substring(2);  // 매번 새로운 랜덤 문자열 state를 생성하여 중복 요청 방지
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&state=${state}`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&state=${state}&prompt=select_account`;
 
     chrome.identity.launchWebAuthFlow(
       {
