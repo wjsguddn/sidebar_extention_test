@@ -49,7 +49,7 @@ function handleBrowserAutoCollect(tabId, triggerType) {
       });
       debounceTimer = null;
     });
-  }, 1500);
+  }, 2000);
 }
 
 
@@ -59,7 +59,7 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
     // info.url이 있을 때
     if (info.url && tab && tab.url) {
       const mode = getPageMode(tab.url);
-      // console.log(mode);
+      //console.log('url',mode);
       if (mode === "recommendation") {
         setTimeout(() => handleBrowserAutoCollect(id, 'url'), 500);
       }
@@ -67,7 +67,7 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
     // status가 complete일 때 (tab.url이 있을 때만)
     if (info.status === "complete" && tab && tab.url) {
       const mode = getPageMode(tab.url);
-      // console.log(mode);
+      //console.log('complete',mode);
       if (mode === "recommendation") {
         handleBrowserAutoCollect(id, 'complete');
       }
