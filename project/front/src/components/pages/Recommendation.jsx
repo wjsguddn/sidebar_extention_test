@@ -5,7 +5,7 @@ import Card from '../ui/Card';
 import './Recommendation.css';
 import '../ui/CustomScrollbar.css';
 import { useWebSocket } from "../../utils/websocketProvider";
-// import { PAGE_MODES } from '../../utils/constants';
+import { PAGE_MODES } from '../../utils/constants';
 
 const CARD_REGEX = /__(COMMENT|SUMMARY|RECOMMEND)\|\|\|/g;
 
@@ -49,7 +49,7 @@ function parseCard(card) {
   }
 }
 
-export function RecommendationFooterContent({ onClick }) {
+export function RecommendationFooterContent({ onClick, setLastMode}) {
   const [tabInfo, setTabInfo] = useState({ title: '', favIconUrl: '' });
 
   // 탭 정보 수집 함수
@@ -80,7 +80,11 @@ export function RecommendationFooterContent({ onClick }) {
   }, [fetchTabInfo]);
 
   return (
-    <Button onClick={onClick} className="rec-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <Button onClick={() => {
+      // 페이지 강제 전환
+      if (setLastMode) {setLastMode(PAGE_MODES.RECOMMENDATION);}
+      if (onClick) onClick();}}
+      className="rec-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div>
         {tabInfo.favIconUrl && (
         <img src={tabInfo.favIconUrl} alt="favicon" style={{ width: 18, height: 18, borderRadius: 4 }} />
@@ -162,8 +166,9 @@ export default function Recommendation({ setFooterClick }) {
                 <div className="card-desc1">{card.desc1}</div>
                 <div className="card-desc2">{card.desc2}</div>
                 <div className="card-url">
+                  🔗
                   {card.url && (
-                    <a href={card.url} target="_blank" rel="noopener noreferrer">{card.url}</a>
+                    <a className="url" href={card.url} target="_blank" rel="noopener noreferrer">{card.url}</a>
                   )}
                 </div>
                 {card.inProgress && <div className="writing-indicator">작성중…</div>}
