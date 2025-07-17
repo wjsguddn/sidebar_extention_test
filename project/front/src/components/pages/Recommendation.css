@@ -38,15 +38,16 @@
 }
 
 .card-summary {
-  background-color: var(--accent-primary);
+  /*background-color: var(--accent-primary);*/
+  background: linear-gradient(to bottom, var(--accent-primary) 0%, #1A8163 5%, #333333 100%);
   filter: drop-shadow(0 0 0.2em var(--text-primary));
   border: 1px solid var(--accent-secondary);
   font-weight:700;
 }
 
 .card-recommend .card-title {
-  font-size: 1em;
-  font-weight: 600;
+  font-size: 1.07em;
+  font-weight: 500;
 }
 
 .card-recommend .card-desc1 {
@@ -59,6 +60,15 @@
 
 .card-recommend .card-url {
   font-size: 0.9em;
+}
+
+.card-url .url {
+  display: inline-block;
+  max-width: 230px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 
 .rec-button {
@@ -75,4 +85,5 @@
 
 .rec-button .gen_rec_text {
   color: var(--accent-primary);
+  font-weight: 500;
 }
