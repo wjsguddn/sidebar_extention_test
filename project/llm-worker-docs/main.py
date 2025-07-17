@@ -33,7 +33,7 @@ WATSONX_API_KEY = os.getenv("WATSONX_API_KEY")
 WATSONX_PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 
 
-def summarize_mt5(text, max_length=512):
+def summarize_mt5(text, max_length=125):
     try:
         # 입력 텍스트가 너무 짧으면 그대로 반환
         if len(text.strip()) < 30:
@@ -47,14 +47,15 @@ def summarize_mt5(text, max_length=512):
             summary_ids = model.generate(
                 input_ids,
                 max_length=max_length,
-                min_length=100,  # 최소 길이 설정
+                min_length=30,  # 최소 길이 설정
                 num_beams=8,  # 빔 서치 더 증가
                 early_stopping=True,
                 do_sample=False,  # 결정적 생성
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
                 no_repeat_ngram_size=3,  # 반복 방지 강화
-                length_penalty=1.5,  # 더 긴 요약 선호
+                encoder_no_repeat_ngram_size=3,
+                length_penalty=1.0,  # 더 긴 요약 선호
                 repetition_penalty=1.3  # 반복 방지
             )
 
