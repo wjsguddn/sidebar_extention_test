@@ -1,3 +1,8 @@
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-30px);}
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);}
+}
+
 .menubar {
   display: flex;
   gap: 16px;
@@ -15,6 +20,7 @@
 }
 
 .menubar-container {
+  padding-right: 14px;
   position: relative;
   display: flex;
   align-items: center;
@@ -40,8 +46,8 @@
 
 .dropdown-menu {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -4px;
+  right: 10px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -121,4 +127,108 @@
 .dropdown-menu {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
+}
+
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  z-index: 1000;
+}
+
+.profile-modal {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: slideDown 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width:95%;
+  height: 410px;
+  text-align: center;
+}
+
+.profile-modal button {
+  margin-top: 8px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--button-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.profile-modal button:hover {
+  background: rgba(100, 100, 100, 0.3);
+}
+
+.profile-modal .avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  margin-top: 25px;
+}
+
+.profile-modal .user-email {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.profile-section {
+  border-bottom: 1px solid var(--border-color);
+  width:90%;
+  text-align: start;
+  margin-bottom: 15px;
+}
+
+.profile-section div{
+  margin-left: 3px;
+}
+
+.profile-section .profile-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.profile-section .profile-label {
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+
+.profile-section .profile-value {
+  font-weight: 300;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.profile-section #user-id {
+  color: var(--text-secondary);
+}
+
+.logout-section {
+  width: 88%;
+  text-align: end;
+}
+
+.logout-button {
+  cursor: pointer;
+  color: var(--text-logout);
+}
+
+.logout-button:hover {
+  color: var(--text-primary);
 }
