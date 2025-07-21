@@ -25,6 +25,16 @@ services:
     env_file:
       - .env
 
+  llm-worker-youtube:
+    build: ./llm-worker-youtube
+    ports:
+      - "50052:50052"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    env_file:
+      - .env
+
   mysql:
     image: mysql:8.0
     environment:
