@@ -242,8 +242,8 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
             {card.type === "TIMELINE" && (
               <div>
                 {card.lines.map((line, idx) => {
-                  const time = line.slice(0, 7);
-                  const text = line.slice(7).trim();
+                  const time = line.slice(0, 5);
+                  const text = line.slice(5).trim();
 
                   return (
                     <div key={idx} className="timeline-entry" style={{ marginBottom: '20px' }}>
