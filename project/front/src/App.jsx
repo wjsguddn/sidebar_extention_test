@@ -4,7 +4,7 @@ import Footer from './components/ui/Footer';
 import LoginPage from './components/pages/LoginPage';
 import DefaultPage from './components/pages/DefaultPage';
 import DocumentSummary from './components/pages/DocumentSummary';
-import YoutubeSummary from './components/pages/YoutubeSummary';
+import YoutubeSummary, { YoutubeSummaryFooterContent } from './components/pages/YoutubeSummary';
 import Recommendation, { RecommendationFooterContent } from './components/pages/Recommendation';
 import SensitivePage from './components/pages/SensitivePage';
 import LoadingSpinner from './components/ui/LoadingSpinner';
@@ -19,6 +19,7 @@ export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUrl, setCurrentUrl] = useState(null);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
     const [lastMode, setLastMode] = useState(PAGE_MODES.DEFAULT);
     const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
@@ -89,6 +90,7 @@ export default function App() {
             const currentTab = tabs[0];
             if (!currentTab?.url) return;
             const url = currentTab.url;
+            setCurrentUrl(url);
             const mode = getPageMode(url);
 
             setPageMode(PAGE_MODES[mode.toUpperCase()]);
@@ -123,14 +125,32 @@ export default function App() {
 
     //si
     useEffect(() => {
-        if (autoRefreshEnabled) {
-            setLastMode(pageMode);
-        } else if (pageMode === PAGE_MODES.DEFAULT) {
-            setLastMode(PAGE_MODES.DEFAULT);
-        } else if (lastMode === PAGE_MODES.DEFAULT) {
-            setLastMode(pageMode);
+        if (!autoRefreshEnabled) {
+            setLastMode(PAGE_MODES.RECOMMENDATION);
         }
-    }, [pageMode, autoRefreshEnabled]);
+    }, []);
+
+    // autoRefreshEnabled가 false일 때, 앱 마운트/URL 변경 시 스토리지 검사
+    useEffect(() => {
+        if (autoRefreshEnabled) return;
+        if (!currentUrl) return;
+
+        // 여러 모드의 캐시를 한 번에 조회
+        const keyRec = `llm_result:recommendation:${currentUrl}`;
+        const keyYt = `llm_result:youtube:${currentUrl}`;
+        const keyDoc = `llm_result:document:${currentUrl}`;
+
+        chrome.storage.local.get([keyRec, keyYt, keyDoc], (items) => {
+            if (items[keyRec]) {
+                setLastMode(PAGE_MODES.RECOMMENDATION);
+            } else if (items[keyDoc]) {
+                setLastMode(PAGE_MODES.DOCUMENT);
+            } else if (items[keyYt]) {
+                setLastMode(PAGE_MODES.YOUTUBE);
+            }
+            // 없으면 그대로 유지
+        });
+    }, [autoRefreshEnabled, currentUrl]);
 
     // AutoMode 토글 상태 background로 전달
     useEffect(() => {
@@ -140,6 +160,7 @@ export default function App() {
 
     // Footer 버튼 핸들러 관리
     const [recommendationFooterClick, setRecommendationFooterClick] = useState(() => () => {});
+    const [youtubeSummaryFooterClick, setYoutubeSummaryFooterClick] = useState(() => () => {});
 
     // 페이지별 컴포넌트 렌더링
     const renderPage = () => {
@@ -149,9 +170,17 @@ export default function App() {
             case PAGE_MODES.DOCUMENT:
                 return <DocumentSummary />;
             case PAGE_MODES.YOUTUBE:
-                return <YoutubeSummary />;
+                return <YoutubeSummary
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setYoutubeSummaryFooterClick} />;
             case PAGE_MODES.RECOMMENDATION:
-                return <Recommendation setFooterClick={setRecommendationFooterClick} />;
+                return <Recommendation
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setRecommendationFooterClick} />;
             case PAGE_MODES.SENSITIVE:
                 return <SensitivePage />;
             default:
@@ -163,18 +192,26 @@ export default function App() {
     // auto false용 페이지 렌더
     const renderPage2 = (mode) => {
         switch (mode) {
-            case PAGE_MODES.DEFAULT:
-                return <DefaultPage />;
             case PAGE_MODES.DOCUMENT:
                 return <DocumentSummary />;
             case PAGE_MODES.YOUTUBE:
-                return <YoutubeSummary />;
+                return <YoutubeSummary
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setYoutubeSummaryFooterClick} />;
             case PAGE_MODES.RECOMMENDATION:
-                return <Recommendation setFooterClick={setRecommendationFooterClick} />;
-            case PAGE_MODES.SENSITIVE:
-                return <SensitivePage />;
+                return <Recommendation
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setRecommendationFooterClick} />;
             default:
-                return <DefaultPage />;
+                return <Recommendation
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setRecommendationFooterClick} />;
         }
     };
 
@@ -193,18 +230,7 @@ export default function App() {
         pageToRender = renderPage(pageMode);
     } 
     else {
-        if (pageMode === PAGE_MODES.DEFAULT) {
-            pageToRender = renderPage2(PAGE_MODES.DEFAULT);
-            // setState는 렌더 중 직접 호출 시 문제유발 가능. useEffect로 관리
-            // setLastMode(PAGE_MODES.DEFAULT);
-        }
-        else if (lastMode === PAGE_MODES.DEFAULT) {
-            pageToRender = renderPage2(pageMode);
-            // setLastMode(pageMode); // 마찬가지
-        }
-        else {
-            pageToRender = renderPage2(lastMode);
-        }
+        pageToRender = renderPage2(lastMode);
     }
 
     return (
@@ -220,6 +246,11 @@ export default function App() {
                             {pageMode === PAGE_MODES.RECOMMENDATION && (
                                 <RecommendationFooterContent
                                 onClick={recommendationFooterClick}
+                                setLastMode={setLastMode}/>
+                            )}
+                            {pageMode === PAGE_MODES.YOUTUBE && (
+                                <YoutubeSummaryFooterContent
+                                onClick={youtubeSummaryFooterClick}
                                 setLastMode={setLastMode}/>
                             )}
                             <AutoRefreshToggleButton enabled={autoRefreshEnabled}
