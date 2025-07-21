@@ -9,7 +9,7 @@ from ..websocket_manager import websocket_manager
 collect_browser_router = APIRouter()
 rec_client = RecClient()
 
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")  # 환경변수에서 관리
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 class CollectReq(BaseModel):
     url: str
@@ -42,7 +42,7 @@ async def collect_browser(req: CollectReq,
     # trigger_type 추출
     body = await request.json()
     trigger_type = body.get("trigger_type", "unknown")
-    print(f"[COLLECT] trigger_type={trigger_type} url={req.url}", flush=True)
+    print(f"[COLLECT BROWSER] trigger_type={trigger_type} url={req.url}", flush=True)
 
 
     data = req.model_dump()
