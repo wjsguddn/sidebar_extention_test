@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import logo from "/icons/le_penseur.png";
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -100,10 +100,61 @@ export function RecommendationFooterContent({ onClick, setLastMode}) {
   );
 }
 
-export default function Recommendation({ setFooterClick }) {
-  const [info, setInfo] = useState("");
-  const [screenshot, setScreenshot] = useState(null);
+export default function Recommendation({ currentUrl, setLastMode, autoRefreshEnabled, setFooterClick }) {
+  // 마운트(렌더) 감지
+  const isMounted = useRef(false);
   const { messages, clearMessages } = useWebSocket();
+  const [cachedResult, setCachedResult] = useState(null);
+  const [renderSource, setRenderSource] = useState("websocket");
+  const [lastMessages, setLastMessages] = useState(null);
+//   const [error, setError] = useState("");
+//   const [loading, setLoading] = useState(false);
+
+  // 마운트/URL 변경 시 캐시 조회
+  useEffect(() => {
+    if (!currentUrl) return;
+    const key = `llm_result:recommendation:${currentUrl}`;
+    chrome.storage.local.get([key], (items) => {
+      if (items[key]) {
+        setCachedResult(items[key].result);
+        setRenderSource("cache");
+        // 모드별 가장 최근 렌더된 content 갱신
+        setLastMessages(items[key].result);
+      }
+      else {
+        setCachedResult(null);
+        setRenderSource("lastMsg");
+      }
+    });
+  }, [currentUrl]);
+
+  // is_final 수신 시 스토리지 갱신
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return; // 마운트 시에는 실행하지 않음
+    }
+    if (!messages.length) return;
+    setRenderSource("websocket");
+    const url = currentUrl;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.is_final) {
+      const fullText = messages.map(msg => msg.content).join("");
+      const key = `llm_result:recommendation:${url}`;
+      const value = {
+        result: fullText,
+        timestamp: Date.now()
+      };
+      chrome.storage.local.set({ [key]: value }, () => {
+        // 저장 완료 후 로그 출력
+        console.log(`[chrome.storage.local 저장] key: ${key}`, value);
+        setCachedResult(fullText);
+        setRenderSource("cache");
+        // 모드별 가장 최근 렌더된 content 갱신
+        setLastMessages(value.result);
+      });
+    }
+  }, [messages]);
 
   useEffect(() => {
     const listener = (msg, sender, sendResponse) => {
@@ -115,23 +166,11 @@ export default function Recommendation({ setFooterClick }) {
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [clearMessages]);
 
+
   const handleClick = useCallback(async () => {
     clearMessages();
-    try {
-      chrome.runtime.sendMessage({ type: "COLLECT_BROWSER_BY_BUTTON" }, (result) => {
-        if (!result || result.error) {
-          setInfo(`오류: ${result?.error || '수집 실패'}`);
-          setScreenshot(null);
-          return;
-        }
-        const { url, title, text, screenshot_base64 } = result;
-        setInfo(`URL:\n${url}\n\nTitle:\n${title}\n\nText:\n${text}`);
-        setScreenshot(screenshot_base64 ? `data:image/png;base64,${screenshot_base64}` : null);
-      });
-    } catch (e) {
-      setInfo(`오류: ${e.message}`);
-      setScreenshot(null);
-    }
+    setRenderSource("websocket");
+    chrome.runtime.sendMessage({ type: "COLLECT_BROWSER_BY_BUTTON" });
   }, [clearMessages]);
 
 // Footer 버튼 핸들러를 App에 연결
@@ -141,7 +180,16 @@ export default function Recommendation({ setFooterClick }) {
     }
   }, [setFooterClick]);
 
-  const fullText = messages.map(msg => msg.content).join("");
+  // 렌더할 데이터 결정
+  let fullText = "";
+  if (renderSource === "cache" && cachedResult) {
+    fullText = cachedResult;
+  } else if (renderSource === "websocket") {
+    fullText = messages.map(msg => msg.content).join("");
+  } else if (renderSource === "lastMsg") {
+    fullText = lastMessages;
+  }
+
   const rawCards = splitStreamCards(fullText);
   const cards = rawCards.map(parseCard);
 
