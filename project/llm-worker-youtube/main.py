@@ -2,6 +2,7 @@ import os, json, time, re
 import openai
 import asyncio
 import grpc
+import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 from typing import Optional
@@ -49,6 +50,21 @@ def format_seconds(seconds):
         return f"{m:02}:{s:02}"
 
 
+def get_chapter(url):
+    with yt_dlp.YoutubeDL({}) as ydl:
+        try:
+            info = ydl.extract_info(url, download=False)
+            chapters = "\n".join(
+                f"{format_seconds(line['start_time'])} {line['title']}"
+                for line in info.get('chapters')
+            )
+            print(chapters)
+            return chapters
+        except Exception as e:
+            print(f"[챕터 추출 실패] {e}")
+            return ""
+
+
 def get_transcript_text(video_id: str, languages=['ko', 'en']) -> str:
     """자막 가져오고 텍스트로 변환"""
     try:
@@ -59,28 +75,26 @@ def get_transcript_text(video_id: str, languages=['ko', 'en']) -> str:
         )
         return text
     except Exception as e:
-        print(f"[오류 발생] {e}")
+        print(f"[자막 추출 오류 발생] {e}")
         return None
 
 
-async def generate_youtube_summary(transcript: str, video_title: str = "") -> str:
+async def generate_youtube_summary(transcript: str, video_title: str = "", chapters: str = "") -> str:
     if not openai.api_key:
         raise Exception("OpenAI API 키가 설정되지 않아 요약을 생성할 수 없습니다.")
 
     print("OpenAI API로 YouTube 요약 생성 중...")
 
-    # 자막이 너무 길면 잘라내기
-    # max_transcript_length = 4000
-    # if len(transcript) > max_transcript_length:
-    #     transcript = transcript[:max_transcript_length] + "..."
-
     prompt = f"""
-다음은 YouTube 동영상의 제목과 자막입니다.
+다음은 YouTube 동영상의 제목과 챕터, 자막정보 입니다.
+챕터 정보는 존재하지 않을 수도 있습니다.
 자막은 유튜브 자동 생성으로, 반복되거나 의미 없는 단어·잡음이 포함되어 있을 수 있습니다.
 문맥을 추론해 주요 내용 중심으로 요약해 주세요. 불명확하거나 무의미한 부분은 무시해도 좋습니다.
 CONTEXT START
 [동영상 제목]:
 {video_title}
+[챕터 정보]:
+{chapters}
 [자막 내용]:
 {transcript}
 CONTEXT END
@@ -105,9 +119,13 @@ __SUMMARY|||
 구조적 흐름(도입 → 본문 → 결론)을 간결히 설명
 "~하고 있습니다", "~보여주고 있네요" 등 부드러운 어조 사용
 __TIMELINE|||
-자막에서 등장한 실제 시간([분:초] 또는 [시:분:초])만 사용
-총 5~10개 항목, 영상 전체 구간을 고르게 나눠서 중요한 장면 선택
-각 항목 설명은 **100자 이내**로 제한
+자막에서 등장한 실제 시간(분:초 또는 시:분:초)만 사용
+챕터 정보가 존재할 시, 타임라인을 나누는 기준은 챕터를 기준으로 할 것을 권장하나, 영상의 길이에 비해 챕터가 충분히 고르게 나눠져있지 않다고 판단되면 임의로 세분화 해도 무방함
+단, 챕터구간들은 전부 반드시 타임라인에 포함되어야함. 즉, 타임라인의 갯수가 챕터의 갯수보다 적어지면 안됨
+챕터를 기준으로 타임라인을 나눌 시, 각 챕터 타이틀과 챕터구간에 포함된 자막정보를 조합하여 설명해야함
+챕터 정보의 부재로 인해 임의로 타임라인을 나눌 시, 영상 전체 구간을 고르게 나눠서 문맥에 따라 중요한 장면들을 타임라인으로 선택해야함
+임의로 지정하는 타임라인은 총 5~10개로 구성할 것을 권장하나, 영상의 길이와 포함된 정보의 양에 따라 유동적으로 조절해야함
+각 항목 설명은 100자 이내로 제한
 설명은 반드시 회화체로 작성 (예: "~을 소개하고 있네요", "~에 대한 이야기예요")
 각 타임라인은 줄바꿈 필수. 중복·추측·특수기호 사용 금지
 
@@ -115,10 +133,10 @@ __TIMELINE|||
 __COMMENT|||Hmm… 영상에서 핵심을 잘 짚어가고 있네요. 복잡한 주제를 조용히 풀어가는 방식이 인상적입니다.
 __SUMMARY|||이 영상은 복잡한 주제를 시청자에게 쉽게 전달하기 위해 구조적으로 구성되어 있습니다. 서두에서는 핵심 문제를 제시하고, 본문에서는 이를 해결하기 위한 이론과 사례를 설명하며, 마지막에는 시청자에게 질문을 던지며 마무리하고 있어요.
 __TIMELINE|||
-[00:15] 영상 도입부에서 주제의 중요성과 배경 설명을 하고 있어요.
-[01:42] 개념 A에 대한 정의와 시각적 예시가 등장합니다.
-[04:10] 실제 사례를 바탕으로 개념 A의 적용 과정을 설명하고 있어요.
-[06:25] 개념 B를 소개하면서 A와의 비교를 하고 있네요.
+00:15 영상 도입부에서 주제의 중요성과 배경 설명을 하고 있어요. 이런 중요성이 있고 배경은 이렇습니다.
+01:42 개념 A에 대한 정의와 시각적 예시가 등장합니다. A는 이러이러하며 이러한 분야에서 아주 중요하게 작용합니다.
+04:10 실제 사례를 바탕으로 개념 A의 적용 과정을 설명하고 있어요. 이러한 사례가 있었고, 이런 방식으로 적용되었네요.
+06:25 개념 B를 소개하면서 A와의 비교를 하고 있네요. B는 A와 비교하여 어떤 면에서는 이렇고, 또한 어떻습니다.
     """
 
     response = openai.ChatCompletion.create(
@@ -172,6 +190,9 @@ class YoutubeSummaryService(youtubesummary_pb2_grpc.YoutubeSummaryServiceService
             video_id = extract_video_id(youtube_url)
             print(f"video_id: {video_id}")
 
+            # 챕터정보 추출
+            chapters = get_chapter(youtube_url)
+
             transcript = get_transcript_text(video_id)
             if transcript:
                 print(transcript)
@@ -180,7 +201,7 @@ class YoutubeSummaryService(youtubesummary_pb2_grpc.YoutubeSummaryServiceService
                 print("자막을 불러올 수 없습니다.")
 
             # OpenAI API로 요약 생성 및 스트리밍
-            async for content in generate_youtube_summary(transcript, title):
+            async for content in generate_youtube_summary(transcript, title, chapters):
                 # print(content)
                 yield YoutubeSummaryResponse(content=content, is_final=False)
 
