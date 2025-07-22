@@ -1,4 +1,5 @@
 import { collectBrowser } from './utils/browserCollector.js';
+import { documentCollector } from './utils/documentCollector.js';
 import { getPageMode } from './utils/pageMode';
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -32,10 +33,11 @@ function handleBrowserAutoCollect(tabId, triggerType) {
 
       const keyRec = `llm_result:recommendation:${url}`;
       const keyYt = `llm_result:youtube:${url}`;
+      const keyDc = `llm_result:document:${url}`;
       // 모든 모드 현재 url에 대한 스토리지 값 검사
-      chrome.storage.local.get([keyRec, keyYt], (items) => {
+      chrome.storage.local.get([keyRec, keyYt, keyDc], (items) => {
         // 하나라도 있으면 return
-        if (items[keyRec] || items[keyYt]) {
+        if (items[keyRec] || items[keyYt] || items[keyDc]) {
           debounceTimer = null;
           return;
         }
@@ -50,6 +52,13 @@ function handleBrowserAutoCollect(tabId, triggerType) {
         } else if (mode === "youtube") {
           chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
           sendToBackend({ youtube_url: url, title: tab.title }, triggerType, mode);
+        } else if (mode === "document") {
+          documentCollector(url).then((data) => {
+            if (data) {
+              chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
+              sendToBackendDoc(data, triggerType);
+            }
+          });
         }
         debounceTimer = null;
       });
@@ -109,6 +118,36 @@ async function sendToBackend(data, triggerType, mode) {
       console.log(`[sendToBackend] Data sent (trigger: ${triggerType}  mode: ${mode})`);
     } catch (e) {
       console.error("[sendToBackend] Failed", e);
+    }
+  });
+}
+
+// doc 백엔드 전송 함수
+async function sendToBackendDoc(data, triggerType) {
+  if (!data) return;
+
+  // JWT 읽기
+  chrome.storage.local.get(['token'], async (result) => {
+    const token = result.token;
+    try {
+      const blob = data;
+
+      const formData = new FormData();
+      formData.append("file", blob, "document.pdf");
+      formData.append("fast", "true");
+
+      const response = await fetch(import.meta.env.VITE_API_BASE + "/collect/doc", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData,
+      });
+      console.log(`[sendToBackend] Data sent (trigger: ${triggerType}  mode: document)`);
+      const result = await response.json();
+      console.log("추출된 텍스트:", result);
+    } catch (error) {
+      console.error("PDF 처리 중 오류:", error);
     }
   });
 }
