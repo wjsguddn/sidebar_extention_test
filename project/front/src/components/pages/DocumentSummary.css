@@ -1,3 +1,4 @@
+/* 기본(라이트) 모드 */
 .document-summary-page {
   padding: 2rem;
   height: calc(100vh - 64px);
@@ -5,7 +6,121 @@
 }
 
 .document-summary-page h2 {
-  color: #808080;
+  color: var(--text-secondary);
   text-align: center;
-  margin: 0;
-} 
+  margin: 0 0 2rem 0;
+}
+
+.document-summary-page h3 {
+  color: var(--text-primary);
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.mini-summaries {
+  margin-bottom: 2rem;
+}
+
+.chunks-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.mini-summary-card {
+  background: #fff;
+  color: #222;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  word-break: break-word;
+  margin: 16px auto;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 1.1rem;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.summary-chunk {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.chunk-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  min-width: 24px;
+  flex-shrink: 0;
+}
+
+.chunk-content {
+  flex: 1;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.final-summary {
+  margin-top: 2rem;
+}
+
+.final-summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.final-summary-card h3 {
+  color: white;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.final-summary-content {
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.final-summary-content strong {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+/* 다크 모드 */
+html[data-theme='dark'] .document-summary-page {
+  background: #23242a;
+  color: #f7f7f7;
+}
+
+html[data-theme='dark'] .mini-summary-card {
+  background: #2c2d34;
+  color: #f7f7f7;
+  border: 1px solid #33343a;
+}
+
+html[data-theme='dark'] .final-summary-card {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  color: #f7f7f7;
+}
+
+html[data-theme='dark'] .final-summary-content {
+  color: #f7f7f7;
+}
+
+html[data-theme='dark'] .final-summary-content strong {
+  color: #fbbf24;
+}
