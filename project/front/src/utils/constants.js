@@ -11,5 +11,5 @@ export const PAGE_MODES = {
 export const API_ENDPOINTS = {
   COLLECT_BROWSER: '/collect/browser',
   COLLECT_YOUTUBE: '/collect/youtube',
-  COLLECT_DOCUMENT: '/collect/document'
+  COLLECT_DOCUMENT: '/collect/doc'
 };
