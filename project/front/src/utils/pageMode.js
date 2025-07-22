@@ -12,12 +12,6 @@ export function getPageMode(url) {
   ) {
     return "default";
   }
-  if (
-    url === 'https://www.google.com' || url === 'https://www.naver.com' ||
-    url === 'https://www.youtube.com'
-  ) {
-    return "default";
-  }
   if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
     return "document";
   }
