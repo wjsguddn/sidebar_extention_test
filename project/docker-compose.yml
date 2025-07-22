@@ -35,6 +35,18 @@ services:
     env_file:
       - .env
 
+  llm-worker-docs:
+    build:
+      context: ./llm-worker-docs
+    container_name: llm-worker-docs
+    ports:
+      - "50053:50053"
+    environment:
+      - WATSONX_API_KEY=${WATSONX_API_KEY}
+      - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
+    env_file:
+      - .env
+
   mysql:
     image: mysql:8.0
     environment:
@@ -51,6 +63,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  pdf-text-extractor:
+    image: huridocs/pdf-document-layout-analysis:v0.0.23
+    container_name: pdf-document-layout-analysis
+    ports:
+      - "5060:5060"
+    command: [
+      "gunicorn",
+      "-k", "uvicorn.workers.UvicornWorker",
+      "--chdir", "./src",
+      "app:app",
+      "--bind", "0.0.0.0:5060",
+      "--timeout", "10000"
+    ]
 
 volumes:
   mysql_data:
