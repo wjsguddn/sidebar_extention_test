@@ -11,3 +11,4 @@ python-jose
 protobuf==4.25.3
 grpcio==1.62.1
 grpcio-tools==1.62.1
+python-multipart
