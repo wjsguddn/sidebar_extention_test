@@ -42,7 +42,7 @@
   background: linear-gradient(to bottom, var(--accent-primary) 0%, #1A8163 5%, #333333 100%);
   filter: drop-shadow(0 0 0.2em var(--text-primary));
   border: 1px solid var(--accent-secondary);
-  font-weight:700;
+  font-weight:500;
 }
 
 .card-recommend .card-title {
