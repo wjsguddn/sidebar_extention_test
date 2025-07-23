@@ -145,13 +145,6 @@ async def collect_docs(
                 print(f"401 Unauthorized: JWT decode error: {e}")
                 raise HTTPException(status_code=401, detail="Invalid token")
 
-        # if not user_id:
-        #     print("401 Unauthorized: user_id not found in token")
-        #     raise HTTPException(status_code=401, detail="User not authenticated")
-        # if not user_id:
-        #     print("Warning: No user_id found, using default user")
-        #     user_id = "anonymous"
-
         # PDF 파일 추출기 전송
         file_data = await file.read()
 
@@ -204,91 +197,32 @@ async def collect_docs(
         print('2---------------------', 'user_id:', user_id)
 
         # gRPC stream 호출 → WebSocket으로 실시간 전송
-        chunk_list = [] #
+        chunk_list = []
         final_summary = None
         
         try:
             print('3---------------------', 'gRPC 호출 시작')
-            i = 0
             async for chunk in docs_client.docssummary_stream(chunks, user_id):
                 # Final summary인지 확인
                 if chunk.startswith("FINAL_SUMMARY:"):
-                    print('FINAL_SUMMARY---------------------------------------------')
-                    final_summary = chunk.replace("FINAL_SUMMARY:", "").strip()
+                    print(chunk, flush=True)
+                    final_summary = chunk.replace("FINAL_SUMMARY: ", "")
                     await websocket_manager.send_to_user(user_id, {
-                        "type": "final_summary",
+                        "type": "final_summary_stream",
                         "content": final_summary
                     })
-                    print(f"Final summary received: {final_summary[:100]}...")
+                    # print(f"Final summary received: {final_summary}...")
                 else:
                     print('CHUNK---------------------------------------------')
-                    chunk_list.append(chunk)
+                    print(chunk, flush=True)
+                    # chunk_list.append(chunk)
                     await websocket_manager.send_to_user(user_id, {
                         "type": "summary_chunk",
                         "content": chunk,
-                        "chunk_index": i
                     })
-                    i += 1
         except Exception as e:
             print(f'4---------------------', 'gRPC 호출 실패:', str(e))
             raise HTTPException(status_code=500, detail=f"gRPC call failed: {str(e)}")
-        
-        ## 여기부터 지우면 됨
-
-        # # 전체 요약 결과를 파일에 저장
-        # import os
-        # from datetime import datetime
-        #
-        # # logs 디렉토리 생성 - backend 폴더 기준으로 logs 폴더 생성
-        # current_dir = os.path.dirname(__file__)  # /app/app/routers
-        # backend_dir = os.path.dirname(os.path.dirname(current_dir))  # /app
-        # logs_dir = os.path.join(backend_dir, 'logs')  # /app/logs
-        # if not os.path.exists(logs_dir):
-        #     os.makedirs(logs_dir)
-        #
-        # # 파일명에 타임스탬프 추가
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # filename = f"summary_{user_id}_{timestamp}.txt"
-        # filepath = os.path.join(logs_dir, filename)
-        #
-        # with open(filepath, 'w', encoding='utf-8') as f:
-        #     f.write(f"=== 문서 요약 결과 ===\n")
-        #     f.write(f"파일명: {file.filename}\n")
-        #     f.write(f"사용자 ID: {user_id}\n")
-        #     f.write(f"요약 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        #     f.write(f"총 청크 수: {len(chunks)}\n")
-        #     f.write(f"요약 결과 수: {len(chunk_list)}\n")
-        #     f.write("=" * 50 + "\n\n")
-        #
-        #     for i, (original_chunk, summary_chunk) in enumerate(zip(chunks, chunk_list)):
-        #         f.write(f"[청크 {i+1}]\n")
-        #         f.write(f"원본: {original_chunk[:200]}...\n")
-        #         f.write(f"요약: {summary_chunk}\n")
-        #         f.write("-" * 30 + "\n\n")
-        #
-        # print(f"요약 결과가 {filepath}에 저장되었습니다.")
-        #
-        # # 간단한 요약 로그도 별도로 저장
-        # simple_log_path = os.path.join(logs_dir, f"simple_summary_{user_id}_{timestamp}.txt")
-        # with open(simple_log_path, 'w', encoding='utf-8') as f:
-        #     f.write(f"=== 간단 요약 로그 ===\n")
-        #     f.write(f"파일: {file.filename}\n")
-        #     f.write(f"시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        #     f.write("=" * 30 + "\n\n")
-        #
-        #     for i, summary in enumerate(chunk_list, 1):
-        #         f.write(f"{i}. {summary}\n")
-        #
-        # print(f"간단 요약 로그가 {simple_log_path}에 저장되었습니다.")
-
-        ## 여기까지 지우면 됨
-        
-        print('Websocket_2---------------------')
-        await websocket_manager.send_to_user(user_id, {
-            "type": "summary_complete",
-            "filename": file.filename
-        })
-        print('Websocket_3---------------------')
 
         return {"status": "ok"}
 
