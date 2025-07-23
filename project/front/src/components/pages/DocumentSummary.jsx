@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import logo from "/icons/le_penseur.png";
 import Card from '../ui/Card';
+import Button from '../ui/Button';
 import './DocumentSummary.css';
 import '../ui/CustomScrollbar.css';
 import { useWebSocket } from '../../utils/websocketProvider';
+import { PAGE_MODES } from '../../utils/constants';
 
 export default function DocumentSummary() {
   const [summaryChunks, setSummaryChunks] = useState([]);
   const [finalSummary, setFinalSummary] = useState('');
+  const [displayMode, setDisplayMode] = useState('mini');  // 'mini' or 'final'
+  const [miniSummary, setMiniSummary] = useState('');
+  const [finalSummaryStream, setFinalSummaryStream] = useState('');
   const [error, setError] = useState('');
   const { messages, isConnected, isLoading, clearMessages } = useWebSocket();
   const summaryRef = useRef(null);
@@ -22,81 +28,55 @@ export default function DocumentSummary() {
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [clearMessages]);
 
+
   useEffect(() => {
-    // WebSocket 메시지 처리
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.type === 'summary_chunk') {
-        const chunkIndex = lastMessage.chunk_index ?? null;
-        setSummaryChunks(prev => {
-          if (chunkIndex === 0) {
-            // 0번이면 새 배열로 리셋
-            return [lastMessage.content];
-          } else if (chunkIndex !== null) {
-            // 해당 인덱스만 덮어쓰기
-            const newArr = [...prev];
-            newArr[chunkIndex] = lastMessage.content;
-            return newArr;
-          } else {
-            // 번호 없으면 그냥 추가
-            return [...prev, lastMessage.content];
-          }
-        });
-      } else if (lastMessage.type === 'final_summary') {
-        setFinalSummary(lastMessage.content);
+    if (messages.length === 0) return;
+    let mini = '';
+    let final = '';
+    let mode = 'mini';
+    // messages를 순차적으로 분기
+    messages.forEach(msg => {
+      if (msg.type === 'summary_chunk') {
+        mode = 'mini';
+        mini = msg.content;
+        final = '';
+      } else if (msg.type === 'final_summary_stream') {
+        mode = 'final';
+        mini = '';
+        final += msg.content;
       }
-    }
+    });
+    setDisplayMode(mode);
+    setMiniSummary(mini);
+    setFinalSummaryStream(final);
   }, [messages]);
 
-  useEffect(() => {
-    if (summaryRef.current) {
-      summaryRef.current.scrollTop = summaryRef.current.scrollHeight;
-    }
-  }, [summaryChunks, finalSummary]);
-
-  const clearSummary = () => {
-    setSummaryChunks([]);
-    setFinalSummary('');
-    setError('');
-  };
 
   return (
     <div className="document-summary-page custom-scrollbar">
-      <Card>
-        <div className="summary-header">
-          <h2>Document Summary</h2>
-        </div>
-        <div className="summary-content">
-          {/* Mini Summaries */}
-          {summaryChunks.length > 0 && (
-            <div className="mini-summaries">
-              <h3>Mini Summaries ({summaryChunks.length})</h3>
-              <div className="chunks-container" ref={summaryRef}>
-                {summaryChunks.map((chunk, index) => (
-                  <Card key={index} className="mini-summary-card">
-                    <div className="summary-chunk">
-                      <span className="chunk-number">{index + 1}.</span>
-                      <span className="chunk-content">{chunk}</span>
-                    </div>
-                  </Card>
-                ))}
+      <div className="logo-section">
+        <img src={logo} className="logo" alt="logo" />
+      </div>
+      <div className="result-section">
+        <Card>
+          <div className="summary-section">
+            {/* 미니서머리 모드 */}
+            {displayMode === 'mini' && (
+              <div className="mini-summary">
+                <div className="doc-ing-text">문서 파악중...</div>
+                {miniSummary}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Final Summary */}
-          {finalSummary && (
-            <div className="final-summary">
-              <Card className="final-summary-card emphasized">
-                <h3>Final Summary (WatsonX LLAMA)</h3>
-                <div className="final-summary-content">
-                  {finalSummary}
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </Card>
+            {/* 파이널서머리 스트림 모드 */}
+            {displayMode === 'final' && (
+              <div className="final-summary">
+                {finalSummaryStream}
+              </div>
+            )}
+         </div>
+        </Card>
+      </div>
     </div>
   );
 } 
