@@ -93,6 +93,29 @@ def summarize_mt5(text, max_length=125):
         return text[:100].strip() + "..."
 
 
+async def wrap_sync_generator(sync_gen_func, *args, **kwargs):
+    # 동기 제너레이터를 비동기 코루틴으로 래핑하여 yield
+    loop = asyncio.get_running_loop()
+    queue = asyncio.Queue()
+
+    def run_and_enqueue():
+        try:
+            for item in sync_gen_func(*args, **kwargs):
+                asyncio.run_coroutine_threadsafe(queue.put(item), loop)
+        finally:
+            asyncio.run_coroutine_threadsafe(queue.put(None), loop)  # 종료 신호
+
+    # 쓰레드에서 실행
+    import threading
+    threading.Thread(target=run_and_enqueue, daemon=True).start()
+
+    while True:
+        item = await queue.get()
+        if item is None:
+            break
+        yield item
+
+
 def summarize_with_watsonx(text):
     """WatsonX LLAMA 모델로 final summary 생성"""
 
@@ -126,7 +149,12 @@ def summarize_with_watsonx(text):
                 - Evaluate the importance of content objectively regardless of section length or keyword density
                 - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
                 - Output must be written in Korean
-
+                
+                **Document Contents:**
+                <Document Start>
+                {text}
+                <Document End>
+                
                 **Output Format**
                 Output ONLY in the following format without any additional titles or text:
 
@@ -135,10 +163,6 @@ def summarize_with_watsonx(text):
                     ◦ (Keyword1): (Brief explanation)  
                     ◦ (Keyword2): (Brief explanation)  
                     ◦ (Keyword3): (Brief explanation)    
-                ||||
-                <Document Start>
-                {text}
-                <Document End>
                 """
 
         prompt_medium = f"""
@@ -154,7 +178,12 @@ def summarize_with_watsonx(text):
                 - **If the document involves comparison or evaluation of methods, clearly state which method performed best and why**
                 - **Include performance metrics if available**
                 - Output must be written in Korean
-
+                
+                **Document Contents:**
+                <Document Start>
+                {text}
+                <Document End>
+                
                 **Output Format:**
                 Main Summary/Topic:  
                 (1–2 sentence summary of the document's main topic or purpose in Korean)
@@ -164,10 +193,6 @@ def summarize_with_watsonx(text):
                 ◦ (Keyword3): (Brief explanation)
                 Overall Content Summary:  
                 (Summary of the whole document in Korean, using intro-body-conclusion format, max 300 characters)
-                ||||
-                <Document Start>
-                {text}
-                <Document End>
                 """
 
         prompt_long = f"""
@@ -183,7 +208,12 @@ def summarize_with_watsonx(text):
                 - **Include performance metrics if available**
                 - Do not assume shorter sections are less important; generate balanced summaries considering the overall document context and structure
                 - Output must be written in Korean
-
+                
+                **Document Contents:**
+                <Document Start>
+                {text}
+                <Document End>
+                
                 **Output Format:**
                 Please follow this structure exactly and make as markdown form:
                 Main Summary/Topic:  
@@ -195,14 +225,10 @@ def summarize_with_watsonx(text):
                 ◦ (Keyword4): (Brief explanation)
                 Overall Content Summary:  
                 (Summary of the whole document in Korean, using intro-body-conclusion format, max 500 characters)
-                ||||
-                <Document Start>
-                {text}
-                <Document End>
-                """
 
+                """
         # "max_new_tokens": 300은 약 1200~1500자 분량의 출력
-        response_json = model.generate(
+        stream = model.generate_text_stream(
             prompt=(
                 prompt_short if text_len < 1000 else
                 prompt_medium if text_len < 5000 else
@@ -214,28 +240,23 @@ def summarize_with_watsonx(text):
             }
         )
 
-
-        try:
-            # generated text
-            summary = response_json["results"][0]["generated_text"]
-            if "||||" in summary:
-                summary = summary.split("||||")[0].strip()
-            return summary
-
-        except (KeyError, IndexError) as e:
-            print("응답 파싱 실패:", str(e))
-            return {
-                "summary": "",
-                "warnings": ["응답 형식이 예상과 다릅니다."]
-            }
+        for chunk in stream:
+            # print(f"[STREAM DEBUG] chunk: {chunk}")
+            try:
+                yield chunk
+            except Exception as e:
+                print("응답 파싱 실패:", str(e))
+                yield "[STREAM ERROR: 응답 파싱 실패]"
 
     except Exception as e:
         print(f"WatsonX 요약 중 오류 발생: {e}")
-        return {"summary": f"WatsonX 요약 오류: {str(e)}"}
+        # return {"summary": f"WatsonX 요약 오류: {str(e)}"}
+        yield f"WatsonX 요약 오류: {str(e)}"
 
 
 class DocsSummaryService(docssummary_pb2_grpc.DocsSummaryServiceServicer):
     async def SummarizeStream(self, request_iterator, context):
+
         try:
             mini_summaries = []
             user_id = None
@@ -250,30 +271,62 @@ class DocsSummaryService(docssummary_pb2_grpc.DocsSummaryServiceServicer):
                     print(f"MT5 요약 중 오류 발생: {e}")
 
                 mini_summaries.append(mini_summary)
-                print('mini_summaries---', mini_summaries)
                 # mini 요약을 실시간으로 전송
                 yield docssummary_pb2.DocsSummaryResponse(line=mini_summary)
+            print('mini_summaries---', mini_summaries)
 
             # 2단계: WatsonX로 final summary 생성
+            # if mini_summaries and user_id:
+            #     try:
+            #         # mini 요약들을 하나의 텍스트로 결합
+            #         combined_text = " ".join(mini_summaries)
+            #
+            #         print(f"Final summary 생성 시작 - 사용자: {user_id}, 텍스트 길이: {len(combined_text)}")
+            #         for summary_chunk in summarize_with_watsonx(combined_text):
+            #             if summary_chunk.strip():
+            #                 yield docssummary_pb2.DocsSummaryResponse(
+            #                     line=f"FINAL_SUMMARY: {summary_chunk}"
+            #                 )
+            #         print(f"Final summary 완료 - 사용자: {user_id}")
+            #     except Exception as e:
+            #         print(f"WatsonX 요약 중 오류 발생: {e}")
+            #         yield docssummary_pb2.DocsSummaryResponse(
+            #             line=f"FINAL_SUMMARY_ERROR: {str(e)}"
+            #         )
             if mini_summaries and user_id:
-                try:
-                    # mini 요약들을 하나의 텍스트로 결합
-                    combined_text = " ".join(mini_summaries)
-                    print(f"Final summary 생성 시작 - 사용자: {user_id}, 텍스트 길이: {len(combined_text)}")
+                combined_text = " ".join(mini_summaries)
 
-                    # WatsonX로 final summary 생성
-                    final_summary = summarize_with_watsonx(combined_text)
-                    # final summary를 별도 응답으로 전송
-                    yield docssummary_pb2.DocsSummaryResponse(
-                        line=f"FINAL_SUMMARY: {final_summary}"
-                    )
-                    print('final_summary---', final_summary)
-                    print(f"Final summary 완료 - 사용자: {user_id}")
-                except Exception as e:
-                    print(f"WatsonX 요약 중 오류 발생: {e}")
-                    yield docssummary_pb2.DocsSummaryResponse(
-                        line=f"FINAL_SUMMARY_ERROR: {str(e)}"
-                    )
+                # 두 동기 제너레이터를 각각 비동기 제너레이터로 래핑
+                watsonx_stream = wrap_sync_generator(summarize_with_watsonx, combined_text)
+                # sonar_stream = wrap_sync_generator(summarize_with_sonar, combined_text)
+
+                # 두 스트림에서 도착하는 대로 gRPC로 전달
+                async def push_to_queue(tag, stream, out_queue):
+                    async for chunk in stream:
+                        await out_queue.put((tag, chunk))
+                    await out_queue.put((tag, None))  # 종료 신호
+
+                output_queue = asyncio.Queue()
+
+                # 두 LLM 스트림을 병렬 실행
+                task1 = asyncio.create_task(push_to_queue("FINAL_SUMMARY", watsonx_stream, output_queue))
+                # task2 = asyncio.create_task(push_to_queue("SONAR", sonar_stream, output_queue))
+
+                finished = set()
+                while len(finished) < 2:
+                    tag, chunk = await output_queue.get()
+                    if chunk is None:
+                        finished.add(tag)
+                        continue
+                    # 메시지 포맷에 따라 구분자 붙여서 yield
+                    if tag == "FINAL_SUMMARY":
+                        yield docssummary_pb2.DocsSummaryResponse(line=f"FINAL_SUMMARY: {chunk}")
+                    elif tag == "SONAR":
+                        yield docssummary_pb2.DocsSummaryResponse(line=f"SONAR: {chunk}")
+
+                # await asyncio.gather(task1, task2)
+                await asyncio.gather(task1)
+
         except Exception as e:
             print(f"Final summary 생성 오류: {e}")
             yield docssummary_pb2.DocsSummaryResponse(
