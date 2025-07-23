@@ -54,6 +54,7 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
     }
     token_resp = py_requests.post('https://oauth2.googleapis.com/token', data=token_data)
     if not token_resp.ok:
+        print("Google token exchange error:", token_resp.text)
         raise HTTPException(status_code=400, detail="Failed to exchange code for token")
     tokens = token_resp.json()
     id_token_str = tokens.get('id_token')
