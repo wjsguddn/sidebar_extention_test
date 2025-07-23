@@ -247,8 +247,8 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
 
                   return (
                     <div key={idx} className="timeline-entry" style={{ marginBottom: '20px' }}>
-                      <span className="timeline_time">{time}</span>
-                      <span className="timeline_text">{text}</span>
+                      <span className="timeline-time">{time}</span>
+                      <span className="timeline-text">{text}</span>
                     </div>
                   );
                 })}
