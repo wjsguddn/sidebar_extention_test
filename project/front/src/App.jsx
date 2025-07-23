@@ -126,7 +126,7 @@ export default function App() {
     //si
     useEffect(() => {
         if (!autoRefreshEnabled) {
-            setLastMode(PAGE_MODES.RECOMMENDATION);
+            setLastMode(pageMode);
         }
     }, []);
 
@@ -225,7 +225,6 @@ export default function App() {
 
     let pageToRender = null;
 
-    // 자동 갱신 비활성화 시에도 Default 페이지에 대한 감지(양방향)은 가능하도록
     if (autoRefreshEnabled) {
         pageToRender = renderPage(pageMode);
     } 
