@@ -212,6 +212,13 @@ async def collect_docs(
                         "content": final_summary
                     })
                     # print(f"Final summary received: {final_summary}...")
+                elif chunk.startswith("SONAR:"):
+                    print(chunk, flush=True)
+                    sonar_chunk = chunk.replace("SONAR: ", "")
+                    await websocket_manager.send_to_user(user_id, {
+                        "type": "sonar_stream",
+                        "content": sonar_chunk
+                    })
                 else:
                     print('CHUNK---------------------------------------------')
                     print(chunk, flush=True)
