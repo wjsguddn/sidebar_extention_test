@@ -3,7 +3,7 @@ import Header from './components/ui/Header';
 import Footer from './components/ui/Footer';
 import LoginPage from './components/pages/LoginPage';
 import DefaultPage from './components/pages/DefaultPage';
-import DocumentSummary from './components/pages/DocumentSummary';
+import DocumentSummary, { DocumentSummaryFooterContent } from './components/pages/DocumentSummary';
 import YoutubeSummary, { YoutubeSummaryFooterContent } from './components/pages/YoutubeSummary';
 import Recommendation, { RecommendationFooterContent } from './components/pages/Recommendation';
 import SensitivePage from './components/pages/SensitivePage';
@@ -161,6 +161,7 @@ export default function App() {
     // Footer 버튼 핸들러 관리
     const [recommendationFooterClick, setRecommendationFooterClick] = useState(() => () => {});
     const [youtubeSummaryFooterClick, setYoutubeSummaryFooterClick] = useState(() => () => {});
+    const [documentSummaryFooterClick, setDocumentSummaryFooterClick] = useState(() => () => {});
 
     // 페이지별 컴포넌트 렌더링
     const renderPage = () => {
@@ -168,7 +169,11 @@ export default function App() {
             case PAGE_MODES.DEFAULT:
                 return <DefaultPage />;
             case PAGE_MODES.DOCUMENT:
-                return <DocumentSummary />;
+                return <DocumentSummary
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setDocumentSummaryFooterClick} />;
             case PAGE_MODES.YOUTUBE:
                 return <YoutubeSummary
                         currentUrl={currentUrl}
@@ -193,7 +198,11 @@ export default function App() {
     const renderPage2 = (mode) => {
         switch (mode) {
             case PAGE_MODES.DOCUMENT:
-                return <DocumentSummary />;
+                return <DocumentSummary
+                        currentUrl={currentUrl}
+                        setLastMode={setLastMode}
+                        autoRefreshEnabled={autoRefreshEnabled}
+                        setFooterClick={setDocumentSummaryFooterClick} />;
             case PAGE_MODES.YOUTUBE:
                 return <YoutubeSummary
                         currentUrl={currentUrl}
@@ -250,6 +259,11 @@ export default function App() {
                             {pageMode === PAGE_MODES.YOUTUBE && (
                                 <YoutubeSummaryFooterContent
                                 onClick={youtubeSummaryFooterClick}
+                                setLastMode={setLastMode}/>
+                            )}
+                            {pageMode === PAGE_MODES.DOCUMENT && (
+                                <DocumentSummaryFooterContent
+                                onClick={documentSummaryFooterClick}
                                 setLastMode={setLastMode}/>
                             )}
                             <AutoRefreshToggleButton enabled={autoRefreshEnabled}
