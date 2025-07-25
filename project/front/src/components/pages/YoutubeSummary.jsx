@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import logo from "/icons/le_penseur.png";
+import logo from "/icons/purple_penseur.png";
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import './YoutubeSummary.css';
@@ -240,13 +240,13 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
             {card.type === "COMMENT" && <div>{card.value}</div>}
             {card.type === "SUMMARY" && <div>{card.value}</div>}
             {card.type === "TIMELINE" && (
-              <div>
+              <div className="timeline-section">
                 {card.lines.map((line, idx) => {
                   const time = line.slice(0, 5);
                   const text = line.slice(5).trim();
 
                   return (
-                    <div key={idx} className="timeline-entry" style={{ marginBottom: '20px' }}>
+                    <div key={idx} className="timeline-entry" >
                       <span className="timeline-time">{time}</span>
                       <span className="timeline-text">{text}</span>
                     </div>
