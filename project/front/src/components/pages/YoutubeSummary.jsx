@@ -83,7 +83,7 @@ export function YoutubeSummaryFooterContent({ onClick, setLastMode}) {
       // 페이지 강제 전환
       if (setLastMode) {setLastMode(PAGE_MODES.YOUTUBE);}
       if (onClick) onClick();}}
-      className="sum-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      className="yt-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div>
         {tabInfo.favIconUrl && (
         <img src={tabInfo.favIconUrl} alt="favicon" style={{ width: 18, height: 18, borderRadius: 4 }} />
@@ -92,7 +92,7 @@ export function YoutubeSummaryFooterContent({ onClick, setLastMode}) {
           {tabInfo.title}
         </span>
       </div>
-      <span className="gen_sum_text" style={{ marginLeft: 8 }}>
+      <span className="gen_yt_text" style={{ marginLeft: 8 }}>
         영상 요약
       </span>
     </Button>
@@ -197,21 +197,21 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
   const filteredCards = [];
   const seenTimelineKeys = new Set();
 
-  // for (const card of cards) {
-  //   if (card.type === "TIMELINE") {
-  //     // lines가 없는 경우도 대비
-  //     const key = (card.lines || []).join('|');
-  //     if (seenTimelineKeys.has(key)) continue;
-  //     seenTimelineKeys.add(key);
-  //     filteredCards.push(card);
-  //   } else {
-  //     filteredCards.push(card);
-  //   }
-  // }
-
   for (const card of cards) {
-    filteredCards.push(card);
+    if (card.type === "TIMELINE") {
+      // lines가 없는 경우도 대비
+      const key = (card.lines || []).join('|');
+      if (seenTimelineKeys.has(key)) continue;
+      seenTimelineKeys.add(key);
+      filteredCards.push(card);
+    } else {
+      filteredCards.push(card);
+    }
   }
+
+//   for (const card of cards) {
+//     filteredCards.push(card);
+//   }
 
   return (
     <div className="youtube-summary-page custom-scrollbar">
@@ -233,7 +233,7 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
         )}
 
         {filteredCards.map((card, i) => {
-        const cardClass = `card-${card.type.toLowerCase()}`; // e.g., card-comment, card-summary, card-timeline
+        const cardClass = `card-${card.type.toLowerCase()}`; // card-comment, card-summary, card-timeline
 
         return (
           <Card key={i} className={cardClass}>
