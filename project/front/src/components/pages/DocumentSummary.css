@@ -35,3 +35,24 @@
 .result-section .mini-summary .doc-ing-text{
   font-size: 1.1rem;
 }
+
+.sum-button {
+  border-radius: 15px;
+  padding: 0.8em 1.2em;
+  width: 62%;
+}
+
+.sum-button div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sum-button .gen_sum_text {
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/*.final-summary {
+  white-space: pre-wrap;
+}*/
