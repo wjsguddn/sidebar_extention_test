@@ -44,6 +44,7 @@ services:
     environment:
       - WATSONX_API_KEY=${WATSONX_API_KEY}
       - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
     env_file:
       - .env
 
