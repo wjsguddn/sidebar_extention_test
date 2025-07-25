@@ -186,12 +186,13 @@ def generate_recommendations(url: str, title: str, text: str):
 - https://portal.withorb.com/view?token=ImNSdHZ2akpEZVltTGo1aVQi.Gj2kziogRmdvF_Mn4ONENvoaOPo
 - 실제 URL로 접근 가능한, 보장된 링크를 제공해야함
 - input으로 제공받은 URL과 동일한 URL은 절대 다시 제공해서는 안됨
+- 참고 링크의 인덱스를 표현하는 [1] [2]와 같은 표현은, 그 어디에도 절대 사용하지 마시오
 
 6. 항목 타입별 정의
 - `__COMMENT`
   사용자의 브라우저 행동에 기반한 캐릭터의 짧은 코멘트 (예: “Hmm... 이 기술에 관심이 있군요.”)
 - `__SUMMARY`
-  현재 사용자가 주목하고 있는 주제에 대한 간결하고 정확한 요약
+  현재 사용자가 주목하고 있는 주제에 대한 간결하고 정확한 요약.
 - `__RECOMMEND`
   형식: `__RECOMMEND|||Title|||추천 이유|||URL`
   1. 콘텐츠 제목은 `Title`로 출력
