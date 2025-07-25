@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import logo from "/icons/le_penseur.png";
+import logo from "/icons/green_penseur.png";
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import './Recommendation.css';
