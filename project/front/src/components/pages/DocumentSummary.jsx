@@ -86,7 +86,7 @@ export function DocumentSummaryFooterContent({ onClick, setLastMode}) {
       // 페이지 강제 전환
       if (setLastMode) {setLastMode(PAGE_MODES.DOCUMENT);}
       if (onClick) onClick();}}
-      className="sum-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      className="doc-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div>
         {tabInfo.favIconUrl && (
         <img src={tabInfo.favIconUrl} alt="favicon" style={{ width: 18, height: 18, borderRadius: 4 }} />
@@ -95,7 +95,7 @@ export function DocumentSummaryFooterContent({ onClick, setLastMode}) {
           {tabInfo.title}
         </span>
       </div>
-      <span className="gen_sum_text" style={{ marginLeft: 8 }}>
+      <span className="gen_doc_text" style={{ marginLeft: 8 }}>
         문서 요약
       </span>
     </Button>
@@ -157,7 +157,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
         final += msg.content;
       }
       else if (msg.type === 'sonar_stream') {
-        mode = '';
+        mode = 'final';
         mini = '';
         sonar += msg.content;
       }
@@ -177,7 +177,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
         <img src={logo} className="logo" alt="logo" />
       </div>
       <div className="result-section">
-        <Card>
+        <Card className="card-comment">
           <div className="summary-section">
             {/* 미니서머리 모드 */}
             {displayMode === 'mini' && (
@@ -202,7 +202,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
 
         {cards.map((card, i) =>
           card.type === "RECOMMEND" && (
-            <Card>
+            <Card className="card-recommend">
               <div className="card-title">{card.title}</div>
               <div className="card-desc1">{card.desc1}</div>
               <div className="card-desc2">{card.desc2}</div>
