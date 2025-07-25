@@ -27,6 +27,14 @@
   padding-bottom: 43px;
 }
 
+.document-summary-page .card-comment {
+  background: var(--comment-bg);
+  margin-bottom: 15px;
+  letter-spacing: -0.015em;
+  box-shadow: 0 0 5px 1px var(--comment-shadow);
+  border-radius: 14px;
+}
+
 .result-section .mini-summary {
   color: var(--text-secondary);
   font-size: 0.95rem;
@@ -36,23 +44,77 @@
   font-size: 1.1rem;
 }
 
-.sum-button {
+.document-summary-page .final-summary {
+  font-size: 1.1rem;
+  background: linear-gradient(
+    110deg,
+    var(--doc-sum1) 0%,
+    var(--doc-sum2) 25%,
+    var(--doc-sum3) 40%,
+    var(--doc-sum4) 100%
+  );
+  shadow: none;
+  border-radius: 5px;
+  border: none;
+  color: var(--sum-text);
+  /* white-space: pre-wrap; */
+}
+
+.document-summary-page .card-recommend{
+  border:none;
+  background: linear-gradient(
+    var(--bg-secondary) 0%,
+    var(--grad1) 40%,
+    var(--grad2) 100%
+  );
+}
+
+.document-summary-page .card-recommend .card-title {
+  margin-bottom: 5px;
+  font-size: 1.07em;
+  font-weight: 500;
+}
+
+.document-summary-page .card-recommend .card-desc1 {
+  margin-bottom: 10px;
+  color: var(--text-third);
+}
+
+.document-summary-page .card-recommend .card-desc2 {
+  margin-bottom: 5px;
+}
+
+.document-summary-page .card-recommend .card-url {
+  font-size: 0.9em;
+}
+
+.document-summary-page .card-url .url {
+  color: var(--doc-accent);
+  display: inline-block;
+  max-width: 225px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.doc-button {
   border-radius: 15px;
   padding: 0.8em 1.2em;
   width: 62%;
 }
 
-.sum-button div {
+.doc-button:hover {
+  border: 1px solid var(--doc-accent-hover) !important;
+}
+
+.doc-button div {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.sum-button .gen_sum_text {
-  color: var(--accent-primary);
+.doc-button .gen_doc_text {
+  color: var(--doc-accent);
   font-weight: 500;
 }
-
-/*.final-summary {
-  white-space: pre-wrap;
-}*/

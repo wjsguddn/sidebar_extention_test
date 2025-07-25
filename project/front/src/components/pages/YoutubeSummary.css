@@ -19,101 +19,6 @@
   transition: filter 300ms;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.youtube-summary-page h2 {
-  margin-bottom: 10px;
-  color: var(--text-primary);
-}
-
-.youtube-summary-page p {
-  margin-bottom: 20px;
-  color: var(--text-secondary);
-}
-
-.summarize-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-bottom: 20px;
-}
-
-.summarize-button:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.summarize-button:disabled {
-  background: var(--disabled-color);
-  cursor: not-allowed;
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  margin: 20px 0;
-}
-
-.loading-container p {
-  color: var(--text-secondary);
-  text-align: center;
-}
-
-.error-message {
-  background: var(--error-bg);
-  color: var(--error-text);
-  padding: 12px;
-  border-radius: 8px;
-  margin: 20px 0;
-  border: 1px solid var(--error-border);
-}
-
-.summary-container {
-  margin-top: 20px;
-}
-
-.summary-container h3 {
-  margin-bottom: 16px;
-  color: #00ff99;
-  font-weight: 500;
-}
-
-.summary-content {
-  background: var(--card-bg);
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.summary-content p {
-  margin-bottom: 8px;
-  line-height: 1.6;
-  color: var(--text-primary);
-}
-
-.summary-content p:last-child {
-  margin-bottom: 0;
-}
-
-.summarize-button-left {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 1000;
-  color: #00ff99;
-  font-weight: bold;
-}
-
 .result-section {
   position: relative;
   z-index: 1;
@@ -122,51 +27,42 @@
   padding-bottom: 43px;
 }
 
+.youtube-summary-page .card-comment {
+  background: var(--comment-bg);
+  margin-bottom: 15px;
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+  box-shadow: 0 0 5px 1px var(--comment-shadow);
+  border-radius: 14px;
+}
 
 .youtube-summary-page .card-summary {
-  background-color: var(--accent-primary);
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
-  border: 1px solid var(--accent-secondary);
-  font-weight:500;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  padding: 20px 18px;
+  font-size: 1.03rem;
+    background: linear-gradient(
+    110deg,
+    var(--yt-sum1) 0%,
+    var(--yt-sum2) 25%,
+    var(--yt-sum3) 40%,
+    var(--yt-sum4) 100%
+  );
+  shadow: none;
+  border-radius: 5px;
   border: none;
-}
-
-.card-default {
-  background-color: #000;
-  color: #fff;
-}
-
-.youtube-summary-page .card-comment{
-  background-color: var(--bg-comment);
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
-}
-
-.youtube-summary-page .card-summary{
-  background-color: var(--accent-primary);
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
-  border: 1px solid var(--accent-secondary);
-  font-weight:500;
+  color: var(--sum-text);
 }
 
 .youtube-summary-page .card-timeline {
-  background-color: var(--bg-comment); /* COMMENT와 동일하게 */
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
-}
-
-.youtube-summary-page .Card {
-  color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  margin-bottom: 16px;
-  padding: 20px 18px;
   border: none;
+  background: linear-gradient(
+  var(--bg-secondary) 0%,
+  var(--yt-timeline1) 45%,
+  var(--yt-timeline2) 70%,
+  var(--grad2) 100%
+);
 }
 
 .timeline-section{
-  margin: 10px 0;
+  margin: 8px 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -182,8 +78,8 @@
 
 .timeline-time {
   font-weight: 500;
-  color: var(--accent-primary);
-  padding-left: 1rem;
+  color: var(--yt-accent);
+  padding-left: 0.5rem;
   /*text-align: right; */              /* 시간 오른쪽 정렬 */
   white-space: nowrap;
 }
@@ -194,19 +90,23 @@
   white-space: pre-wrap; /* 자동 줄바꿈 */
 }
 
-.sum-button {
+.yt-button {
   border-radius: 15px;
   padding: 0.8em 1.2em;
   width: 62%;
 }
 
-.sum-button div {
+.yt-button:hover {
+  border: 1px solid var(--yt-accent-hover) !important;
+}
+
+.yt-button div {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.sum-button .gen_sum_text {
-  color: var(--accent-primary);
+.yt-button .gen_yt_text {
+  color: var(--yt-accent);
   font-weight: 500;
 }

@@ -19,11 +19,11 @@
   transition: filter 300ms;
 }
 
-.logo:hover {
+/*.logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
-}
+}*/
 
-.result-section {
+.recommendation-page .result-section {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -31,40 +31,60 @@
   padding-bottom: 43px;
 }
 
-
-.card-comment {
-  background-color: var(--bg-comment);
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
+.recommendation-page .card-comment {
+  background: var(--comment-bg);
+  margin-bottom: 15px;
+  letter-spacing: -0.015em;
+  box-shadow: 0 0 5px 1px var(--comment-shadow);
+  border-radius: 14px;
 }
 
-.card-summary {
-  /*background-color: var(--accent-primary);*/
-  background: linear-gradient(to bottom, var(--accent-primary) 0%, #1A8163 5%, #333333 100%);
-  filter: drop-shadow(0 0 0.2em var(--text-primary));
-  border: 1px solid var(--accent-secondary);
-  font-weight:500;
+.recommendation-page .card-summary {
+  font-size: 1.03rem;
+  background: linear-gradient(
+    110deg,
+    var(--rec-sum1) 0%,
+    var(--rec-sum2) 25%,
+    var(--rec-sum3) 40%,
+    var(--rec-sum4) 100%
+  );
+  shadow: none;
+  border-radius: 5px;
+  border: none;
+  color: var(--sum-text);
 }
 
-.card-recommend .card-title {
+.recommendation-page .card-recommend{
+  border:none;
+  background: linear-gradient(
+    var(--bg-secondary) 0%,
+    var(--grad1) 40%,
+    var(--grad2) 100%
+  );
+}
+
+.recommendation-page .card-recommend .card-title {
+  margin-bottom: 5px;
   font-size: 1.07em;
   font-weight: 500;
 }
 
-.card-recommend .card-desc1 {
+.recommendation-page .card-recommend .card-desc1 {
   margin-bottom: 10px;
+  color: var(--text-third);
 }
 
-.card-recommend .card-desc2 {
+.recommendation-page .card-recommend .card-desc2 {
   margin-bottom: 5px;
 }
 
-.card-recommend .card-url {
+.recommendation-page .card-recommend .card-url {
   font-size: 0.9em;
 }
 
-.card-url .url {
+.recommendation-page .card-url .url {
   display: inline-block;
-  max-width: 230px;
+  max-width: 225px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
