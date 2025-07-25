@@ -165,19 +165,26 @@
   border: none;
 }
 
+.timeline-section{
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .timeline-entry {
   display: grid;
   grid-template-columns: 45px 1fr;  /* 시간 고정, 텍스트 유동 */
   align-items: start;
   gap: 1.5rem;                        /* 시간과 텍스트 간 여백 */
-  margin-bottom: 16px;
   line-height: 1.6;
 }
 
 .timeline-time {
   font-weight: 500;
   color: var(--accent-primary);
-  text-align: right;               /* 시간 오른쪽 정렬 */
+  padding-left: 1rem;
+  /*text-align: right; */              /* 시간 오른쪽 정렬 */
   white-space: nowrap;
 }
 
