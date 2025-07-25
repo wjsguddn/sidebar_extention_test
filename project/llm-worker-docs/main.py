@@ -23,7 +23,7 @@ model_name = "csebuetnlp/mT5_multilingual_XLSum"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-# model.eval()
+model.eval()
 
 # .env 경로를 project 루트로 지정
 env_path = Path(__file__).resolve().parents[0] / ".env"
