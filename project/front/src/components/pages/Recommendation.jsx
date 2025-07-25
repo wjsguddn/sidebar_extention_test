@@ -203,7 +203,9 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
         {cards.map((card, i) => (
           <Card key={i} className={`card-${card.type.toLowerCase()}` + (card.inProgress ? " writing" : "") }>
             {card.type === "COMMENT" && (
-              <div>{card.value}</div>
+              <div>
+                {card.value}
+              </div>
             )}
             {card.type === "SUMMARY" && (
               <div>{card.value}</div>
@@ -214,9 +216,11 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
                 <div className="card-desc1">{card.desc1}</div>
                 <div className="card-desc2">{card.desc2}</div>
                 <div className="card-url">
-                  🔗
                   {card.url && (
-                    <a className="url" href={card.url} target="_blank" rel="noopener noreferrer">{card.url}</a>
+                    <div>
+                      🔗
+                      <a className="url" href={card.url} target="_blank" rel="noopener noreferrer">{card.url}</a>
+                    </div>
                   )}
                 </div>
                 {card.inProgress && <div className="writing-indicator">작성중…</div>}
