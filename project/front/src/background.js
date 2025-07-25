@@ -197,4 +197,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // async 응답
   }
 
+  if (msg.type === "COLLECT_DOCUMENT_BY_BUTTON") {
+  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+    const tabId = tabs[0]?.id;
+    if (!tabId) return sendResponse({ error: "No active tab" });
+
+    chrome.tabs.get(tabId, (tab) => {
+      (async () => {
+        const data = await documentCollector(tab.url);
+        if (data) {
+          sendToBackendDoc(data, 'button');
+          sendResponse(data);
+        } else {
+          sendResponse({ error: "Collection failed" });
+        }
+      })();
+    });
+  });
+  return true; // async 응답
+}
+
 });
