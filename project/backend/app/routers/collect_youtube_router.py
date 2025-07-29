@@ -47,8 +47,9 @@ async def collect_youtube(req: YoutubeUrlReq,
     async for chunk in youtube_client.youtubesummary_stream(user_id, json.dumps(data)):
         print(chunk, flush=True)
         await websocket_manager.send_to_user(user_id, {
+            "type": "youtube",
             "content": chunk.content,
-            "is_final": chunk.is_final
+            "is_final_y": chunk.is_final
         })
 
     return {"status": "ok"}

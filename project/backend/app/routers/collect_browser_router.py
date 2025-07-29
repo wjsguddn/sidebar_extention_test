@@ -51,8 +51,9 @@ async def collect_browser(req: CollectReq,
     async for chunk in rec_client.recommend_stream(user_id, json.dumps(data)):
         print(chunk, flush=True)
         await websocket_manager.send_to_user(user_id, {
+            "type": "browser",
             "content": chunk.content,
-            "is_final": chunk.is_final
+            "is_final_b": chunk.is_final
         })
 
     return {"status": "ok"}
