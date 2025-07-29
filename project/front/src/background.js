@@ -11,65 +11,72 @@ let API = import.meta.env.VITE_API_BASE + "/collect/browser";
 
 let autoRefreshEnabled = false;
 
+
+function getTab(tabId) {
+  return new Promise((resolve) => {
+    chrome.tabs.get(tabId, (tab) => resolve(tab));
+  });
+}
+
+function getStorage(keys) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(keys, (items) => resolve(items));
+  });
+}
+
+
 // 전역 단일 디바운스 타이머 및 상태
 let debounceTimer = null;
 // url 이벤트 윈도우 관리
 let lastSentUrl = null;
 let lastSentTime = 0;
 // 자동 수집 트리거 관리: handleBrowserAutoCollect
-function handleBrowserAutoCollect(tabId, triggerType) {
+async function handleBrowserAutoCollect(tabId, triggerType) {
   if (!autoRefreshEnabled) return;
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-  debounceTimer = setTimeout(() => {
-    chrome.tabs.get(tabId, (tab) => {
-      const url = tab.url;
-      const mode = getPageMode(url);
-      const now = Date.now();
-      if (mode === "default" || mode === "sensitive") {
-        debounceTimer = null;
-        return;
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    const tab = await getTab(tabId);
+    const url = tab.url;
+    const mode = getPageMode(url);
+    const now = Date.now();
+
+    if (mode === "default" || mode === "sensitive") {
+      debounceTimer = null;
+      return;
+    }
+
+    const keyRec = `llm_result:recommendation:${url}`;
+    const keyYt = `llm_result:youtube:${url}`;
+    const keyDc = `llm_result:document:${url}`;
+    const items = await getStorage([keyRec, keyYt, keyDc]);
+    if (items[keyRec] || items[keyYt] || items[keyDc]) {
+      debounceTimer = null;
+      return;
+    }
+    if (url === lastSentUrl && now - lastSentTime < 10000) {
+      debounceTimer = null;
+      return;
+    }
+    lastSentUrl = url;
+    lastSentTime = now;
+
+    if (mode === "recommendation") {
+      const data = await collectBrowser(tabId);
+      if (data) {
+        chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
+        sendToBackend(data, triggerType, mode);
       }
-
-      const keyRec = `llm_result:recommendation:${url}`;
-      const keyYt = `llm_result:youtube:${url}`;
-      const keyDc = `llm_result:document:${url}`;
-      // 모든 모드 현재 url에 대한 스토리지 값 검사
-      chrome.storage.local.get([keyRec, keyYt, keyDc], (items) => {
-        // 하나라도 있으면 return
-        if (items[keyRec] || items[keyYt] || items[keyDc]) {
-          debounceTimer = null;
-          return;
-        }
-        if (url === lastSentUrl && now - lastSentTime < 10000) {
-          debounceTimer = null;
-          return;
-        }
-        lastSentUrl = url;
-        lastSentTime = now;
-
-        if (mode === "recommendation") {
-          collectBrowser(tabId).then((data) => {
-            if (data) {
-              chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
-              sendToBackend(data, triggerType, mode);
-            }
-          });
-        } else if (mode === "youtube") {
-          chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
-          sendToBackend({ youtube_url: url, title: tab.title }, triggerType, mode);
-        } else if (mode === "document") {
-          documentCollector(url).then((data) => {
-            if (data) {
-              chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
-              sendToBackendDoc(data, triggerType);
-            }
-          });
-        }
-        debounceTimer = null;
-      });
-    });
+    } else if (mode === "youtube") {
+      chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
+      sendToBackend({ youtube_url: url, title: tab.title }, triggerType, mode);
+    } else if (mode === "document") {
+      const data = await documentCollector(url);
+      if (data) {
+        chrome.runtime.sendMessage({ type: "RESET_WEBSOCKET_MESSAGE" });
+        sendToBackendDoc(data, triggerType, url);
+      }
+    }
+    debounceTimer = null;
   }, 2500);
 }
 
@@ -103,6 +110,7 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
   }
 });
 
+
 // 백엔드 전송 함수
 async function sendToBackend(data, triggerType, mode) {
   if (!data) return;
@@ -130,7 +138,7 @@ async function sendToBackend(data, triggerType, mode) {
 }
 
 // doc 백엔드 전송 함수
-async function sendToBackendDoc(data, triggerType) {
+async function sendToBackendDoc(data, triggerType, pdfUrl) {
   if (!data) return;
 
   // JWT 읽기
@@ -142,6 +150,7 @@ async function sendToBackendDoc(data, triggerType) {
       const formData = new FormData();
       formData.append("file", blob, "document.pdf");
       formData.append("fast", "true");
+      formData.append("pdf_url", pdfUrl);
 
       const response = await fetch(import.meta.env.VITE_API_BASE + "/collect/doc", {
         method: "POST",
@@ -190,16 +199,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tabId = tabs[0]?.id;
       if (!tabId) return sendResponse({ error: "No active tab" });
-      
-      chrome.tabs.get(tabId, (tab) => {
-        const data = { youtube_url: tab.url, title: tab.title };
-        if (data.youtube_url) {
-          sendToBackend(data, 'button', "youtube");
-          sendResponse(data);
-        } else {
-          sendResponse({ error: "Collection failed" });
-        }
-      });
+
+      const tab = await getTab(tabId);
+      const data = { youtube_url: tab.url, title: tab.title };
+      if (data.youtube_url) {
+        sendToBackend(data, 'button', "youtube");
+        sendResponse(data);
+      } else {
+        sendResponse({ error: "Collection failed" });
+      }
     });
     return true; // async 응답
   }
@@ -213,7 +221,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       (async () => {
         const data = await documentCollector(tab.url);
         if (data) {
-          sendToBackendDoc(data, 'button');
+          sendToBackendDoc(data, 'button', tab.url);
           sendResponse(data);
         } else {
           sendResponse({ error: "Collection failed" });
