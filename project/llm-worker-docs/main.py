@@ -369,68 +369,130 @@ __RECOMMEND|||[HuggingFace 블로그] MCP란?|||🧠 문맥처리 · AI구조 ·
             print("응답 본문:", res.text)
             raise
 
+# 유저별 작업 관리
+user_tasks = {}
 
 # gRPC 서비스 구현
 class DocsSummaryService(docssummary_pb2_grpc.DocsSummaryServiceServicer):
     async def SummarizeStream(self, request_iterator, context):
+        user_id = None
+        # try:
+        #     mini_summaries = []
+        #
+        #     # 1단계: MT5로 mini 요약 생성
+        #     async for req in request_iterator:
+        #         user_id = req.user_id
+        #         try:
+        #             mini_summary = summarize_mt5(req.chunk)
+        #             print('mini_summary---', mini_summary)
+        #         except Exception as e:
+        #             print(f"MT5 요약 중 오류 발생: {e}")
+        #
+        #         mini_summaries.append(mini_summary)
+        #         # mini 요약을 실시간으로 전송
+        #         yield docssummary_pb2.DocsSummaryResponse(line=mini_summary)
+        #     print('mini_summaries---', mini_summaries)
+        #
+        #     if mini_summaries and user_id:
+        #         combined_text = " ".join(mini_summaries)
+        #
+        #         # 두 동기 제너레이터를 각각 비동기 제너레이터로 래핑
+        #         watsonx_stream = wrap_sync_generator(summarize_with_watsonx, combined_text)
+        #         sonar_stream = wrap_sync_generator(generate_recommendations, combined_text)
+        #
+        #         # 두 스트림에서 도착하는 대로 gRPC로 전달
+        #         async def push_to_queue(tag, stream, out_queue):
+        #             async for chunk in stream:
+        #                 await out_queue.put((tag, chunk))
+        #             await out_queue.put((tag, None))  # 종료 신호
+        #
+        #         output_queue = asyncio.Queue()
+        #
+        #         # 두 LLM 스트림을 병렬 실행
+        #         task2 = asyncio.create_task(push_to_queue("SONAR", sonar_stream, output_queue))
+        #         task1 = asyncio.create_task(push_to_queue("FINAL_SUMMARY", watsonx_stream, output_queue))
+        #
+        #
+        #         finished = set()
+        #         while len(finished) < 2:
+        #             tag, chunk = await output_queue.get()
+        #             if chunk is None:
+        #                 finished.add(tag)
+        #                 continue
+        #             # 메시지 포맷에 따라 구분자 붙여서 yield
+        #             if tag == "FINAL_SUMMARY":
+        #                 yield docssummary_pb2.DocsSummaryResponse(line=f"FINAL_SUMMARY: {chunk}")
+        #             elif tag == "SONAR":
+        #                 yield docssummary_pb2.DocsSummaryResponse(line=f"SONAR: {chunk}")
+        #
+        #         await asyncio.gather(task1, task2)
+        #
+        # except Exception as e:
+        #     print(f"Final summary 생성 오류: {e}")
+        #     yield docssummary_pb2.DocsSummaryResponse(
+        #         line=f"FINAL_SUMMARY_ERROR: {str(e)}"
+        #     )
 
         try:
-            mini_summaries = []
-            user_id = None
-
-            # 1단계: MT5로 mini 요약 생성
+            # 첫 req에서 user_id 추출
             async for req in request_iterator:
                 user_id = req.user_id
-                try:
-                    mini_summary = summarize_mt5(req.chunk)
-                    print('mini_summary---', mini_summary)
-                except Exception as e:
-                    print(f"MT5 요약 중 오류 발생: {e}")
+                break  # 첫 req만 확인 (필수!)
 
+            # 기존 작업이 있으면 취소
+            if user_id in user_tasks:
+                user_tasks[user_id].cancel()
+                try:
+                    await user_tasks[user_id]
+                except asyncio.CancelledError:
+                    pass
+
+            user_tasks[user_id] = asyncio.current_task()
+
+            # 다시 첫 req 포함 전체 stream 반복
+            mini_summaries = []
+            if user_id:
+                # 첫 req 처리
+                mini_summary = summarize_mt5(req.chunk)
                 mini_summaries.append(mini_summary)
-                # mini 요약을 실시간으로 전송
                 yield docssummary_pb2.DocsSummaryResponse(line=mini_summary)
-            print('mini_summaries---', mini_summaries)
+
+            async for req in request_iterator:
+                mini_summary = summarize_mt5(req.chunk)
+                mini_summaries.append(mini_summary)
+                yield docssummary_pb2.DocsSummaryResponse(line=mini_summary)
 
             if mini_summaries and user_id:
                 combined_text = " ".join(mini_summaries)
-
-                # 두 동기 제너레이터를 각각 비동기 제너레이터로 래핑
                 watsonx_stream = wrap_sync_generator(summarize_with_watsonx, combined_text)
                 sonar_stream = wrap_sync_generator(generate_recommendations, combined_text)
 
-                # 두 스트림에서 도착하는 대로 gRPC로 전달
                 async def push_to_queue(tag, stream, out_queue):
                     async for chunk in stream:
                         await out_queue.put((tag, chunk))
-                    await out_queue.put((tag, None))  # 종료 신호
+                    await out_queue.put((tag, None))
 
                 output_queue = asyncio.Queue()
-
-                # 두 LLM 스트림을 병렬 실행
                 task2 = asyncio.create_task(push_to_queue("SONAR", sonar_stream, output_queue))
                 task1 = asyncio.create_task(push_to_queue("FINAL_SUMMARY", watsonx_stream, output_queue))
-
-
                 finished = set()
                 while len(finished) < 2:
                     tag, chunk = await output_queue.get()
                     if chunk is None:
                         finished.add(tag)
                         continue
-                    # 메시지 포맷에 따라 구분자 붙여서 yield
                     if tag == "FINAL_SUMMARY":
                         yield docssummary_pb2.DocsSummaryResponse(line=f"FINAL_SUMMARY: {chunk}")
                     elif tag == "SONAR":
                         yield docssummary_pb2.DocsSummaryResponse(line=f"SONAR: {chunk}")
-
                 await asyncio.gather(task1, task2)
-
+                yield docssummary_pb2.DocsSummaryResponse(line="IS_FINAL")
         except Exception as e:
             print(f"Final summary 생성 오류: {e}")
-            yield docssummary_pb2.DocsSummaryResponse(
-                line=f"FINAL_SUMMARY_ERROR: {str(e)}"
-            )
+            yield docssummary_pb2.DocsSummaryResponse(line=f"DOCS_SUMMARY_ERROR: {str(e)}")
+        finally:
+            if user_id:
+                user_tasks.pop(user_id, None)
 
 
 async def serve():
