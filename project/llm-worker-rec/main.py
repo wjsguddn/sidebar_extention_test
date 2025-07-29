@@ -4,8 +4,7 @@ import requests
 import asyncio
 import grpc
 
-from recommendation_pb2 import RecommendResponse
-import recommendation_pb2_grpc
+import recommendation_pb2, recommendation_pb2_grpc
 
 
 """
@@ -41,10 +40,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Perplexity API 설정
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
-
-
-# 유저별 작업 관리
-user_tasks = {}
 
 
 # GPT generate
@@ -252,6 +247,9 @@ __RECOMMEND|||[TechCrunch] 왜 MCP인가|||🌐 기술융합 · 산업동향 · 
             raise
 
 
+# 유저별 작업 관리
+user_tasks = {}
+
 # gRPC 서비스 구현
 class RecommendationService(recommendation_pb2_grpc.RecommendationServiceServicer):
     async def Recommend(self, request, context):
@@ -279,18 +277,19 @@ class RecommendationService(recommendation_pb2_grpc.RecommendationServiceService
             print(f"title: {title}")
             print(f"text(앞 300자): {text[:300]} ...")
         except Exception as e:
-            yield RecommendResponse(content=f"browser_context 파싱 오류: {e}", is_final=True)
-            del user_tasks[user_id]
+            yield recommendation_pb2.RecommendResponse(content=f"browser_context 파싱 오류: {e}", is_final="Error")
+            user_tasks.pop(user_id, None)
             return
 
         try:
             for content in generate_recommendations(url, title, text):
-                yield RecommendResponse(content=content, is_final=False)
-            yield RecommendResponse(content="", is_final=True)
+                yield recommendation_pb2.RecommendResponse(content=content, is_final="")
+            yield recommendation_pb2.RecommendResponse(content="", is_final=url)
         except Exception as e:
-            yield RecommendResponse(content=f"추천 생성 중 오류: {str(e)}", is_final=True)
+            yield recommendation_pb2.RecommendResponse(content=f"추천 생성 중 오류: {str(e)}", is_final="Error")
         finally:
             user_tasks.pop(user_id, None)
+
 
 async def serve():
     server = grpc.aio.server()

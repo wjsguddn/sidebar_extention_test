@@ -7,8 +7,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 from typing import Optional
 
-from youtubesummary_pb2 import YoutubeSummaryResponse
-import youtubesummary_pb2_grpc
+import youtubesummary_pb2, youtubesummary_pb2_grpc
 
 # OpenAI API 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -16,9 +15,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Perplexity API 설정
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
-
-# 유저별 작업 관리
-user_tasks = {}
 
 
 def extract_video_id(youtube_url: str) -> str:
@@ -159,6 +155,9 @@ __TIMELINE|||
             yield content
 
 
+# 유저별 작업 관리
+user_tasks = {}
+
 # gRPC 서비스 구현
 class YoutubeSummaryService(youtubesummary_pb2_grpc.YoutubeSummaryServiceServicer):
     async def YoutubeSummary(self, request, context):
@@ -183,8 +182,8 @@ class YoutubeSummaryService(youtubesummary_pb2_grpc.YoutubeSummaryServiceService
             print(f"youtube_url: {youtube_url}")
             print(f"title: {title}")
         except Exception as e:
-            yield YoutubeSummaryResponse(content=f"youtube_context 파싱 오류: {e}", is_final=True)
-            del user_tasks[user_id]
+            yield youtubesummary_pb2.YoutubeSummaryResponse(content=f"youtube_context 파싱 오류: {e}", is_final="Error")
+            user_tasks.pop(user_id, None)
             return
 
         try:
@@ -205,12 +204,12 @@ class YoutubeSummaryService(youtubesummary_pb2_grpc.YoutubeSummaryServiceService
             # OpenAI API로 요약 생성 및 스트리밍
             async for content in generate_youtube_summary(transcript, title, chapters):
                 # print(content)
-                yield YoutubeSummaryResponse(content=content, is_final=False)
+                yield youtubesummary_pb2.YoutubeSummaryResponse(content=content, is_final="")
 
-            yield YoutubeSummaryResponse(content="", is_final=True)
+            yield youtubesummary_pb2.YoutubeSummaryResponse(content="", is_final=youtube_url)
 
         except Exception as e:
-            yield YoutubeSummaryResponse(content=f"요약 생성 중 오류: {str(e)}", is_final=True)
+            yield youtubesummary_pb2.YoutubeSummaryResponse(content=f"요약 생성 중 오류: {str(e)}", is_final="Error")
         finally:
             user_tasks.pop(user_id, None)
 
