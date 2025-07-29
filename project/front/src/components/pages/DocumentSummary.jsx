@@ -104,6 +104,7 @@ export function DocumentSummaryFooterContent({ onClick, setLastMode}) {
 
 
 export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEnabled, setFooterClick }) {
+  const isMounted = useRef(false);
   const [summaryChunks, setSummaryChunks] = useState([]);
   const [finalSummary, setFinalSummary] = useState('');
   const [sonarResult, setSonarResult] = useState('');
@@ -138,6 +139,56 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
       setFooterClick(() => handleClick);
     }
   }, [setFooterClick]);
+
+
+  // 마운트/URL 변경 시 캐시 조회
+  useEffect(() => {
+    if (!currentUrl) return;
+    const key = `llm_result:document:${currentUrl}`;
+    chrome.storage.local.get([key], (items) => {
+      if (items[key]) {
+        setFinalSummaryStream(items[key].result.final_summary_storage);
+        setSonarResult(items[key].result.sonar_storage);
+        setSonarStarted(true);
+        setDisplayMode('final');
+      }
+    });
+  }, [currentUrl]);
+
+
+  // is_final_d 수신 시 스토리지 갱신
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    if (!messages.length) return;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.is_final_d) {
+      // 메시지 타입별로 정리
+      const result = {
+        final_summary_storage: '',
+        sonar_storage: '',
+      };
+      result.final_summary_storage = messages
+        .filter(msg => msg.type === "final_summary_stream")
+        .map(msg => msg.content)
+        .join("");
+      result.sonar_storage = messages
+        .filter(msg => msg.type === "sonar_stream")
+        .map(msg => msg.content)
+        .join("");
+
+      const key = `llm_result:document:${lastMsg.is_final_d}`;
+      const value = {
+        result: result,
+        timestamp: Date.now()
+      };
+      chrome.storage.local.set({ [key]: value }, () => {
+        console.log(`[chrome.storage.local 저장] key: ${key}`, value);
+      });
+    }
+  }, [messages]);
 
 
   useEffect(() => {
@@ -191,7 +242,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
             )}
             {cards.map((card, i) =>
               card.type === "COMMENT" && (
-                <div>{card.value}</div>
+                <div key={i}>{card.value}</div>
               )
             )}
          </div>
@@ -206,7 +257,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
 
         {cards.map((card, i) =>
           card.type === "RECOMMEND" && (
-            <Card className="card-recommend">
+            <Card key={i} className="card-recommend">
               <div className="card-title">{card.title}</div>
               <div className="card-desc1">{card.desc1}</div>
               <div className="card-desc2">{card.desc2}</div>
