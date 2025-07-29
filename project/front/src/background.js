@@ -26,6 +26,7 @@ function handleBrowserAutoCollect(tabId, triggerType) {
     chrome.tabs.get(tabId, (tab) => {
       const url = tab.url;
       const mode = getPageMode(url);
+      const now = Date.now();
       if (mode === "default" || mode === "sensitive") {
         debounceTimer = null;
         return;
@@ -41,6 +42,12 @@ function handleBrowserAutoCollect(tabId, triggerType) {
           debounceTimer = null;
           return;
         }
+        if (url === lastSentUrl && now - lastSentTime < 10000) {
+          debounceTimer = null;
+          return;
+        }
+        lastSentUrl = url;
+        lastSentTime = now;
 
         if (mode === "recommendation") {
           collectBrowser(tabId).then((data) => {
