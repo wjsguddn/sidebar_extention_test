@@ -184,7 +184,7 @@ def generate_recommendations(url: str, title: str, text: str):
 - `|||` 기호를 사용하여 항목 타입과 내용, 필드를 구분
 - 출력 시 링크는 다음 형식으로 표기
 - https://portal.withorb.com/view?token=ImNSdHZ2akpEZVltTGo1aVQi.Gj2kziogRmdvF_Mn4ONENvoaOPo
-- 실제 URL로 접근 가능한, 보장된 링크를 제공해야함
+- 실제로 컨텐츠가 존재하고 접근 가능한, 검증된 링크만 제공해야함
 - input으로 제공받은 URL과 동일한 URL은 절대 다시 제공해서는 안됨
 - 참고 링크의 인덱스를 표현하는 [1] [2]와 같은 표현은, 그 어디에도 절대 사용하지 마시오
 
