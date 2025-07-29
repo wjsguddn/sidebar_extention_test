@@ -103,6 +103,7 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
   // 마운트(렌더) 감지
   const isMounted = useRef(false);
   const { messages, clearMessages } = useWebSocket();
+  const [messagesF, setMessagesF] = useState("");
   const [cachedResult, setCachedResult] = useState(null);
   const [renderSource, setRenderSource] = useState("websocket");
   const [lastMessages, setLastMessages] = useState(null);
@@ -127,6 +128,18 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
     });
   }, [currentUrl]);
 
+  useEffect(() => {
+    if (messages.length === 0) return;
+    let messages_f = '';
+    // messages를 순차적으로 분기
+    messages.forEach(msg => {
+      if (msg.type === 'youtube') {
+        messages_f += msg.content;
+      }
+    });
+    setMessagesF(messages_f);
+  }, [messages]);
+
   // is_final 수신 시 스토리지 갱신
   useEffect(() => {
     if (!isMounted.current) {
@@ -134,12 +147,14 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
       return; // 마운트 시에는 실행하지 않음
     }
     if (!messages.length) return;
-    setRenderSource("websocket");
-    const url = currentUrl;
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg.is_final) {
-      const fullText = messages.map(msg => msg.content).join("");
-      const key = `llm_result:youtube:${url}`;
+    if (lastMsg.type === "youtube"){ setRenderSource("websocket"); }
+    if (lastMsg.is_final_y) {
+      const fullText = messages
+        .filter(msg => msg.type === "youtube")
+        .map(msg => msg.content)
+        .join("");
+      const key = `llm_result:youtube:${lastMsg.is_final_y}`;
       const value = {
         result: fullText,
         timestamp: Date.now()
@@ -184,7 +199,7 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
   if (renderSource === "cache" && cachedResult) {
     fullText = cachedResult;
   } else if (renderSource === "websocket") {
-    fullText = messages.map(msg => msg.content).join("");
+    fullText = messagesF
   } else if (renderSource === "lastMsg") {
     fullText = lastMessages;
   }
@@ -228,7 +243,7 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
 
         {filteredCards.length === 0 && !loading && !error && (
           <Card>
-            <p>궁금해.. 이 영상이 궁금해..</p>
+            <p>영상 분석중...</p>
           </Card>
         )}
 
@@ -238,7 +253,7 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
         return (
           <Card key={i} className={cardClass}>
             {card.type === "COMMENT" && <div>{card.value}</div>}
-            {card.type === "SUMMARY" && <div>{card.value}</div>}
+            {card.type === "SUMMARY" && <div><div className="youtube-summary-text">YouTube Summary</div>{card.value}</div>}
             {card.type === "TIMELINE" && (
               <div className="timeline-section">
                 {card.lines.map((line, idx) => {
