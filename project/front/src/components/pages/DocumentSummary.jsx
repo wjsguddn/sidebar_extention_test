@@ -113,6 +113,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
   const [error, setError] = useState('');
   const { messages, isConnected, isLoading, clearMessages } = useWebSocket();
   const summaryRef = useRef(null);
+  const [sonarStarted, setSonarStarted] = useState(false);
 
   // background.js에서 RESET_WEBSOCKET_MESSAGE 메시지를 받으면 메시지 초기화
   useEffect(() => {
@@ -138,6 +139,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
     }
   }, [setFooterClick]);
 
+
   useEffect(() => {
     if (messages.length === 0) return;
     let mini = '';
@@ -147,6 +149,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
     // messages를 순차적으로 분기
     messages.forEach(msg => {
       if (msg.type === 'summary_chunk') {
+        setSonarStarted(false);
         mode = 'mini';
         mini = msg.content;
         final = '';
@@ -157,7 +160,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
         final += msg.content;
       }
       else if (msg.type === 'sonar_stream') {
-        mode = 'final';
+        setSonarStarted(true);
         mini = '';
         sonar += msg.content;
       }
@@ -180,7 +183,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
         <Card className="card-comment">
           <div className="summary-section">
             {/* 미니서머리 모드 */}
-            {displayMode === 'mini' && (
+            {displayMode === 'mini' && !sonarStarted && (
               <div className="mini-summary">
                 <div className="doc-ing-text">문서 파악중...</div>
                 {miniSummary}
@@ -196,6 +199,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
 
         {displayMode === 'final' && (
           <Card className="final-summary">
+            <div className="document-summary-text">Document Summary</div>
             {finalSummaryStream}
           </Card>
         )}
