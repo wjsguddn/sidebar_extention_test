@@ -9,7 +9,7 @@ message YoutubeSummaryRequest {
 
 message YoutubeSummaryResponse {
   string content = 1;
-  bool is_final = 2;
+  string is_final = 2;
 }
 
 service YoutubeSummaryService {

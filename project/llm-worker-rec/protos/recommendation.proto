@@ -13,5 +13,5 @@ message RecommendRequest {
 
 message RecommendResponse {
   string content = 1; // 추천 결과(스트림 chunk)
-  bool is_final = 2;  // 마지막 chunk 여부
-} 
+  string is_final = 2;  // 마지막 chunk 여부 및 url
+}
