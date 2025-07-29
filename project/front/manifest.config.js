@@ -11,13 +11,6 @@ export default {
     '128': 'icons/128.png'
   },
 
-//  web_accessible_resources: [
-//    {
-//      resources: ["icons/*"],
-//      matches: ["<all_urls>"]
-//    }
-//  ],
-
   // ----------사이드패널 기본 경로
   side_panel: {
     default_path: 'index.html'
@@ -43,8 +36,8 @@ export default {
     'tabs',
     'sidePanel',
     'scripting',
-    'activeTab',
-    'tabCapture',
+    // 'activeTab',
+    // 'tabCapture',
     'identity',
     'storage'
   ],
