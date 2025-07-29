@@ -12,7 +12,7 @@ export function getPageMode(url) {
   ) {
     return "default";
   }
-  if (url.includes('.pdf') || url.includes('.doc') || url.includes('.docx')) {
+  if (url.includes('.pdf') || url.includes('/pdf') || url.includes('pdf/')) {
     return "document";
   }
   if (url.includes('youtube.com/watch')) {
