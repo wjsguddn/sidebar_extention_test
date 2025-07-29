@@ -49,6 +49,8 @@
   border-radius: 5px;
   border: none;
   color: var(--sum-text);
+  padding-top: 0.7rem;
+  font-size: 1.05rem;
 }
 
 .youtube-summary-page .card-timeline {
@@ -109,4 +111,12 @@
 .yt-button .gen_yt_text {
   color: var(--yt-accent);
   font-weight: 500;
+}
+
+.youtube-summary-text{
+  margin: 0;
+  margin-bottom: 0.4rem;
+  color: var(--yt-accent);
+  font-size: 1.3rem;
+  font-weight: 700;
 }
