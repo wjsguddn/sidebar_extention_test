@@ -211,7 +211,7 @@ async def collect_docs(
                     await websocket_manager.send_to_user(user_id, {
                         "type": "final_summary_stream",
                         "content": final_summary,
-                        "is_final_y": ""
+                        "is_final_d": ""
                     })
                     # print(f"Final summary received: {final_summary}...")
                 elif chunk.startswith("SONAR:"):
@@ -220,14 +220,14 @@ async def collect_docs(
                     await websocket_manager.send_to_user(user_id, {
                         "type": "sonar_stream",
                         "content": sonar_chunk,
-                        "is_final_y": ""
+                        "is_final_d": ""
                     })
                 elif chunk.startswith("IS_FINAL"):
                     print(chunk, flush=True)
                     await websocket_manager.send_to_user(user_id, {
                         "type": "is_final",
                         "content": "",
-                        "is_final_y": pdf_url
+                        "is_final_d": pdf_url
                     })
                 else:
                     print('CHUNK---------------------------------------------')
@@ -236,7 +236,7 @@ async def collect_docs(
                     await websocket_manager.send_to_user(user_id, {
                         "type": "summary_chunk",
                         "content": chunk,
-                        "is_final_y": ""
+                        "is_final_d": ""
                     })
         except Exception as e:
             print(f'4---------------------', 'gRPC 호출 실패:', str(e))
