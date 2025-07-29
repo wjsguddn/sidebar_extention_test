@@ -392,24 +392,6 @@ class DocsSummaryService(docssummary_pb2_grpc.DocsSummaryServiceServicer):
                 yield docssummary_pb2.DocsSummaryResponse(line=mini_summary)
             print('mini_summaries---', mini_summaries)
 
-            # 2단계: WatsonX로 final summary 생성
-            # if mini_summaries and user_id:
-            #     try:
-            #         # mini 요약들을 하나의 텍스트로 결합
-            #         combined_text = " ".join(mini_summaries)
-            #
-            #         print(f"Final summary 생성 시작 - 사용자: {user_id}, 텍스트 길이: {len(combined_text)}")
-            #         for summary_chunk in summarize_with_watsonx(combined_text):
-            #             if summary_chunk.strip():
-            #                 yield docssummary_pb2.DocsSummaryResponse(
-            #                     line=f"FINAL_SUMMARY: {summary_chunk}"
-            #                 )
-            #         print(f"Final summary 완료 - 사용자: {user_id}")
-            #     except Exception as e:
-            #         print(f"WatsonX 요약 중 오류 발생: {e}")
-            #         yield docssummary_pb2.DocsSummaryResponse(
-            #             line=f"FINAL_SUMMARY_ERROR: {str(e)}"
-            #         )
             if mini_summaries and user_id:
                 combined_text = " ".join(mini_summaries)
 
