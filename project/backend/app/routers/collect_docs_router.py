@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Header, HTTPException, UploadFile, File
+from fastapi import APIRouter, Request, Header, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 import os, json
 import requests as py_requests
@@ -119,6 +119,7 @@ def chunk_text(text, max_chars=1000, overlap=50):
 async def collect_docs(
     request: Request,
     file: UploadFile = File(...),
+    pdf_url: str = Form(None),
     authorization: str = Header(None)
 ):
     try:
@@ -209,7 +210,8 @@ async def collect_docs(
                     final_summary = chunk.replace("FINAL_SUMMARY: ", "")
                     await websocket_manager.send_to_user(user_id, {
                         "type": "final_summary_stream",
-                        "content": final_summary
+                        "content": final_summary,
+                        "is_final_y": ""
                     })
                     # print(f"Final summary received: {final_summary}...")
                 elif chunk.startswith("SONAR:"):
@@ -217,7 +219,15 @@ async def collect_docs(
                     sonar_chunk = chunk.replace("SONAR: ", "")
                     await websocket_manager.send_to_user(user_id, {
                         "type": "sonar_stream",
-                        "content": sonar_chunk
+                        "content": sonar_chunk,
+                        "is_final_y": ""
+                    })
+                elif chunk.startswith("IS_FINAL"):
+                    print(chunk, flush=True)
+                    await websocket_manager.send_to_user(user_id, {
+                        "type": "is_final",
+                        "content": "",
+                        "is_final_y": pdf_url
                     })
                 else:
                     print('CHUNK---------------------------------------------')
@@ -226,6 +236,7 @@ async def collect_docs(
                     await websocket_manager.send_to_user(user_id, {
                         "type": "summary_chunk",
                         "content": chunk,
+                        "is_final_y": ""
                     })
         except Exception as e:
             print(f'4---------------------', 'gRPC 호출 실패:', str(e))
