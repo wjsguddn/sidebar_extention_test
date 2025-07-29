@@ -104,6 +104,7 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
   // 마운트(렌더) 감지
   const isMounted = useRef(false);
   const { messages, clearMessages } = useWebSocket();
+  const [messagesF, setMessagesF] = useState("");
   const [cachedResult, setCachedResult] = useState(null);
   const [renderSource, setRenderSource] = useState("websocket");
   const [lastMessages, setLastMessages] = useState(null);
@@ -128,19 +129,33 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
     });
   }, [currentUrl]);
 
-  // is_final 수신 시 스토리지 갱신
+  useEffect(() => {
+    if (messages.length === 0) return;
+    let messages_f = '';
+    // messages를 순차적으로 분기
+    messages.forEach(msg => {
+      if (msg.type === 'browser') {
+        messages_f += msg.content;
+      }
+    });
+    setMessagesF(messages_f);
+  }, [messages]);
+
+  // is_final_b 수신 시 스토리지 갱신
   useEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true;
       return; // 마운트 시에는 실행하지 않음
     }
     if (!messages.length) return;
-    setRenderSource("websocket");
-    const url = currentUrl;
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg.is_final) {
-      const fullText = messages.map(msg => msg.content).join("");
-      const key = `llm_result:recommendation:${url}`;
+    if (lastMsg.type === "browser"){ setRenderSource("websocket"); }
+    if (lastMsg.is_final_b) {
+      const fullText = messages
+        .filter(msg => msg.type === "browser")
+        .map(msg => msg.content)
+        .join("");
+      const key = `llm_result:recommendation:${lastMsg.is_final_b}`;
       const value = {
         result: fullText,
         timestamp: Date.now()
@@ -185,7 +200,7 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
   if (renderSource === "cache" && cachedResult) {
     fullText = cachedResult;
   } else if (renderSource === "websocket") {
-    fullText = messages.map(msg => msg.content).join("");
+    fullText = messagesF;
   } else if (renderSource === "lastMsg") {
     fullText = lastMessages;
   }
