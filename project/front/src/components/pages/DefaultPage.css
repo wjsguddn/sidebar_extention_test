@@ -4,7 +4,7 @@
   height: calc(100vh - 64px);
 }
 
-.logo-container {
+.default-page .logo-container {
   margin-bottom: 2rem;
 }
 
