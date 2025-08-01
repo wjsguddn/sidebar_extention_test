@@ -6,3 +6,4 @@ grpcio==1.62.1
 grpcio-tools==1.62.1
 requests
 ibm-watsonx-ai
+openai==0.28
