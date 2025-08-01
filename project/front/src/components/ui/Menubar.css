@@ -232,3 +232,129 @@
 .logout-button:hover {
   color: var(--text-primary);
 }
+
+/* Settings Modal Styles */
+.settings-modal {
+  height: auto;
+  min-height: 400px;
+  max-height: 500px;
+  padding: 20px 0;
+}
+
+.settings-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: var(--text-primary);
+}
+
+.settings-section {
+  border-bottom: 1px solid var(--border-color);
+  width: 90%;
+  text-align: start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+}
+
+.settings-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 25px;
+}
+
+.settings-label {
+  font-size: 1.08rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.settings-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.settings-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.settings-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.settings-select option:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+/* Custom Dropdown Styles */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-header {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s;
+}
+
+.dropdown-header:hover {
+  border-color: var(--accent-primary);
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-option:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.dropdown-option:first-child {
+  border-radius: 0;
+}
+
+.dropdown-option:last-child {
+  border-radius: 0 0 5px 5px;
+}
