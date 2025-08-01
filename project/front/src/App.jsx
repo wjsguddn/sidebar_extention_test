@@ -126,7 +126,7 @@ export default function App() {
     //si
     useEffect(() => {
         if (!autoRefreshEnabled) {
-            setLastMode(pageMode);
+            setLastMode(PAGE_MODES.RECOMMENDATION);
         }
     }, []);
 
