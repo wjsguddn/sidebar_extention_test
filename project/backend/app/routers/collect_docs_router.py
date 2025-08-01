@@ -120,6 +120,8 @@ async def collect_docs(
     request: Request,
     file: UploadFile = File(...),
     pdf_url: str = Form(None),
+    content_type: str = Form("default"),
+    content_period: str = Form("none"),
     authorization: str = Header(None)
 ):
     try:
@@ -203,7 +205,8 @@ async def collect_docs(
         
         try:
             print('3---------------------', 'gRPC 호출 시작')
-            async for chunk in docs_client.docssummary_stream(chunks, user_id):
+            print(f'[COLLECT DOCS] content_type={content_type}, content_period={content_period}')
+            async for chunk in docs_client.docssummary_stream(chunks, user_id, content_type, content_period):
                 # Final summary인지 확인
                 if chunk.startswith("FINAL_SUMMARY:"):
                     print(chunk, flush=True)
