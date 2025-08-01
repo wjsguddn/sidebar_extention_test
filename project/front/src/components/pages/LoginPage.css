@@ -4,19 +4,62 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: top;
   height: calc(100vh - 64px);
+  justify-content: space-between;
 }
 
-.logo-container {
-  margin-top: 8rem;
+.login-page-section{
+  display: flex;
+  flex-direction: column;
+  padding-top: 10vh;
+  align-items: center;
 }
 
-.login-message h3 {
-  font-family: Avenir;
+.login-page .logo {
+  padding: 0;
+  width: 130px;
+  height: 130px;
+}
+
+.login-page .logo-container {
+  width: 20.125rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+}
+
+.ment-section1{
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 5%;
+}
+
+
+.ment-section1 .ment2{
+  color: var(--accent-primary);
+}
+
+.login-message{
+  padding-top: 7vh;
+  padding-bottom: 2vh;
+}
+
+.login-message h2 {
   color: var(--text-primary);
-  margin-bottom: 5rem;
-  font-size: 1.9rem;
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.ment-section2{
+  padding-top: 15vh;
+  font-size: 1rem;
+  color: var(--text-third);
+}
+
+.ment-section2 .ment1{
+  font-size: 1.1rem;
 }
 
 .login-overlay {
@@ -29,3 +72,4 @@
   z-index: 1000; /* 다른 요소들 위에 표시 */
   backdrop-filter: blur(2px); /* 배경 블러 효과 */
 }
+

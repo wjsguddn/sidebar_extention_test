@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import GoogleLoginButton from '../ui/GoogleLoginButton';
 import './LoginPage.css';
+import logo from "/icons/thinker_l.png";
 
 export default function LoginPage({ theme }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -20,23 +21,46 @@ export default function LoginPage({ theme }) {
 
   return (
     <div className="login-page">
-      <div
-        className="logo-container"
-        style={{
-          backgroundImage: `url(${logoUrl})`,
-          width: '80%',
-          height: '8%',
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center'
-        }}
-      />
-      <div className="login-message">
-        <h3>로그인</h3>
+      <div className="login-page-section">
+        <img src={logo} className="logo" alt="logo" />
+        <div
+          className="logo-container"
+          style={{
+            backgroundImage: `url(${logoUrl})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }}
+        />
+        <div className="ment-section1">
+            <div className="ment1">
+              브라우저 AI 리서치 어시스턴트
+            </div>
+            <div className="ment2">
+              PenseurAI는 질문하지 않아도 제공합니다
+            </div>
+        </div>
+
+        <div className="login-message">
+          <h2>로그인</h2>
+        </div>
+        <GoogleLoginButton
+          onLoginStart={handleLoginStart}
+          onLoginComplete={handleLoginComplete}/>
       </div>
-      <GoogleLoginButton
-        onLoginStart={handleLoginStart}
-        onLoginComplete={handleLoginComplete}/>
+
+      <div className="ment-section2">
+        <div className="ment1">
+          사용자 데이터는 안전하게 보호됩니다
+        </div>
+        <a href="https://www.notion.so/PenseurAI-Privacy-Policy-240cdb6aa38e80bc9534d17dee1646ce"
+          className="ment2"
+          target="_blank"
+          rel="noopener noreferrer">
+          개인정보 처리방침
+        </a>
+      </div>
+
 
       {/* 로그인 중일 때 반투명 오버레이 */}
       {isLoggingIn && <div className="login-overlay"></div>}
