@@ -2,7 +2,7 @@ export default {
   // ----------기본 메타
   manifest_version: 3,
   name: 'PenseurAI',          // 확장 이름
-  description: 'Real-time recommendation browser agent',
+  description: 'AI-powered browser assistant for YouTube, PDF, and general web content analysis',
   version: '0.0.1',
 
   icons: {
@@ -36,8 +36,7 @@ export default {
     'tabs',
     'sidePanel',
     'scripting',
-    // 'activeTab',
-    // 'tabCapture',
+    'activeTab',
     'identity',
     'storage'
   ],
