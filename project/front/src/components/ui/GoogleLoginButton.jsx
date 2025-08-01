@@ -20,7 +20,7 @@ const GoogleLoginButton = ({ onLoginStart, onLoginComplete }) => {
       onLoginStart();
     }
 
-    // 더 빠른 state 생성 (더 짧은 문자열)
+    // 빠른 state 생성 (더 짧은 문자열)
     const state = Math.random().toString(36).substring(2, 8);
     
     // URL 파라미터 최적화
@@ -85,7 +85,7 @@ const GoogleLoginButton = ({ onLoginStart, onLoginComplete }) => {
   return (
     <button className="google-login-btn" onClick={handleLogin}>
       <img src="/icons/google_48.png" alt="Google Logo" className="google-logo" />
-      Google 계정으로 로그인
+      Google 계정으로 시작하기
     </button>
   );
 };
