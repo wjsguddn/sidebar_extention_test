@@ -13,10 +13,24 @@
 .recommendation-page .logo {
   vertical-align: bottom;
   padding: 0;
-  width: 130px;
+  width: 135px;
   height: 130px;
   will-change: filter;
   transition: filter 300ms;
+}
+
+.recommendation-page .logo.loading {
+  animation: logoShadow 1.7s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px var(--rec-logo-shadow));
+}
+
+@keyframes logoShadow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px var(--rec-logo-shadow));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--rec-logo-shadow));
+  }
 }
 
 /*.logo:hover {
@@ -31,16 +45,27 @@
   padding-bottom: 43px;
 }
 
+.recommendation-page .default-card {
+  background: var(--comment-bg);
+  letter-spacing: -0.015em;
+  box-shadow: 0 0 5px 1px var(--comment-shadow);
+  border-radius: 14px;
+  padding-top: 1.3rem;
+  padding-bottom: 1.3rem;
+  font-size: 1.1rem;
+}
+
 .recommendation-page .card-comment {
   background: var(--comment-bg);
   margin-bottom: 15px;
   letter-spacing: -0.015em;
   box-shadow: 0 0 5px 1px var(--comment-shadow);
   border-radius: 14px;
+  font-size: 1.03rem;
 }
 
 .recommendation-page .card-summary {
-  font-size: 1.03rem;
+  font-size: 1.05rem;
   background: linear-gradient(
     110deg,
     var(--rec-sum1) 0%,
@@ -48,7 +73,6 @@
     var(--rec-sum3) 40%,
     var(--rec-sum4) 100%
   );
-  shadow: none;
   border-radius: 5px;
   border: none;
   color: var(--sum-text);
@@ -65,7 +89,7 @@
 
 .recommendation-page .card-recommend .card-title {
   margin-bottom: 5px;
-  font-size: 1.07em;
+  font-size: 1.1rem;
   font-weight: 500;
 }
 

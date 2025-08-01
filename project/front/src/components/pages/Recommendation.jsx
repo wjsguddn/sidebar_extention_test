@@ -108,6 +108,8 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
   const [cachedResult, setCachedResult] = useState(null);
   const [renderSource, setRenderSource] = useState("websocket");
   const [lastMessages, setLastMessages] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasReceivedFirstMessage, setHasReceivedFirstMessage] = useState(false);
 //   const [error, setError] = useState("");
 //   const [loading, setLoading] = useState(false);
 
@@ -171,15 +173,31 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
     }
   }, [messages]);
 
+  // 요청 시작 감지
   useEffect(() => {
     const listener = (msg, sender, sendResponse) => {
       if (msg.type === "RESET_WEBSOCKET_MESSAGE") {
         clearMessages();
       }
+      if (msg.type === "RECOMMENDATION_REQUEST_STARTED") {
+        setIsLoading(true);
+        setHasReceivedFirstMessage(false);
+      }
     };
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [clearMessages]);
+
+  // 첫 메시지 도착 감지
+  useEffect(() => {
+    if (messages.length > 0 && !hasReceivedFirstMessage) {
+      const firstBrowserMessage = messages.find(msg => msg.type === 'browser');
+      if (firstBrowserMessage) {
+        setHasReceivedFirstMessage(true);
+        setIsLoading(false);
+      }
+    }
+  }, [messages, hasReceivedFirstMessage]);
 
 
   const handleClick = useCallback(async () => {
@@ -211,10 +229,26 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
   return (
     <div className="recommendation-page custom-scrollbar">
       <div className="logo-section">
-        <img src={logo} className="logo" alt="logo" />
+        <img 
+          src={logo} 
+          className={`logo ${isLoading ? 'loading' : ''}`} 
+          alt="logo" 
+        />
       </div>
 
       <div className="result-section">
+        {cards.length === 0 && (
+          <Card className="default-card">
+            {isLoading 
+              ? "웹 페이지 파악중..." 
+              : [
+                  "오늘은 무엇을 찾아보고 계신가요?",
+                  "어떤 페이지를 보고 계신가요?"
+                ][Math.floor(Math.random() * 2)]
+            }
+          </Card>
+        )}
+
         {cards.map((card, i) => (
           <Card key={i} className={`card-${card.type.toLowerCase()}` + (card.inProgress ? " writing" : "") }>
             {card.type === "COMMENT" && (
@@ -243,6 +277,7 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
             )}
           </Card>
         ))}
+
       </div>
 
     </div>
