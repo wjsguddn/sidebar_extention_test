@@ -6,15 +6,12 @@ import './YoutubeSummary.css';
 import '../ui/CustomScrollbar.css';
 import { useWebSocket } from "../../utils/websocketProvider";
 import { PAGE_MODES } from '../../utils/constants';
-
 const CARD_REGEX = /__(COMMENT|SUMMARY|TIMELINE)\|\|\|/g;
-
 function splitStreamCards(streamText) {
   let cards = [];
   let match;
   let lastIndex = 0;
   let lastType = null;
-
   while ((match = CARD_REGEX.exec(streamText)) !== null) {
     if (lastType) {
       const content = streamText.slice(lastIndex, match.index);
@@ -29,7 +26,6 @@ function splitStreamCards(streamText) {
   }
   return cards;
 }
-
 function parseCard(card) {
   if (card.type === "TIMELINE") {
     const lines = card.content
@@ -41,16 +37,29 @@ function parseCard(card) {
       lines,
     };
   }
-
   return {
     type: card.type,
     value: card.content.trim(),
   };
 }
-
+function mmssToSeconds(timeStr) {
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length === 2) {
+    // MM:SS 형식
+    const [min, sec] = parts;
+    return min * 60 + sec;
+  } else if (parts.length === 3) {
+    // H:MM:SS 형식
+    const [hour, min, sec] = parts;
+    return hour * 3600 + min * 60 + sec;
+  }
+  return 0; // 잘못된 형식인 경우
+}
+function SeekTo(seconds) {
+  chrome.runtime.sendMessage({ type: "SEEK_TO", seconds });
+}
 export function YoutubeSummaryFooterContent({ onClick, setLastMode}) {
   const [tabInfo, setTabInfo] = useState({ title: '', favIconUrl: '' });
-
   // 탭 정보 수집 함수
   const fetchTabInfo = useCallback(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -62,22 +71,18 @@ export function YoutubeSummaryFooterContent({ onClick, setLastMode}) {
       }
     });
   }, []);
-
   useEffect(() => {
     fetchTabInfo(); // 최초 수집
-
     // 탭 변경/업데이트 이벤트 리스너 등록
     const handleTabChange = () => fetchTabInfo();
     chrome.tabs.onActivated.addListener(handleTabChange);
     chrome.tabs.onUpdated.addListener(handleTabChange);
-
     // 언마운트 시 리스너 해제
     return () => {
       chrome.tabs.onActivated.removeListener(handleTabChange);
       chrome.tabs.onUpdated.removeListener(handleTabChange);
     };
   }, [fetchTabInfo]);
-
   return (
     <Button onClick={() => {
       // 페이지 강제 전환
@@ -98,7 +103,6 @@ export function YoutubeSummaryFooterContent({ onClick, setLastMode}) {
     </Button>
   );
 }
-
 export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEnabled, setFooterClick }) {
   // 마운트(렌더) 감지
   const isMounted = useRef(false);
@@ -109,7 +113,8 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
   const [lastMessages, setLastMessages] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasReceivedFirstMessage, setHasReceivedFirstMessage] = useState(false);
   // 마운트/URL 변경 시 캐시 조회
   useEffect(() => {
     if (!currentUrl) return;
@@ -127,7 +132,6 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
       }
     });
   }, [currentUrl]);
-
   useEffect(() => {
     if (messages.length === 0) return;
     let messages_f = '';
@@ -139,7 +143,6 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
     });
     setMessagesF(messages_f);
   }, [messages]);
-
   // is_final 수신 시 스토리지 갱신
   useEffect(() => {
     if (!isMounted.current) {
@@ -169,31 +172,42 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
       });
     }
   }, [messages]);
-
+  // 요청 시작 감지
   useEffect(() => {
     const listener = (msg, sender, sendResponse) => {
       if (msg.type === "RESET_WEBSOCKET_MESSAGE") {
         clearMessages();
+      }
+      if (msg.type === "YOUTUBE_REQUEST_STARTED") {
+        setIsLoading(true);
+        setHasReceivedFirstMessage(false);
       }
     };
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [clearMessages]);
 
+  // 첫 메시지 도착 감지
+  useEffect(() => {
+    if (messages.length > 0 && !hasReceivedFirstMessage) {
+      const firstYoutubeMessage = messages.find(msg => msg.type === 'youtube');
+      if (firstYoutubeMessage) {
+        setHasReceivedFirstMessage(true);
+        setIsLoading(false);
+      }
+    }
+  }, [messages, hasReceivedFirstMessage]);
   const handleClick = useCallback(async () => {
     clearMessages();
     setRenderSource("websocket");
     chrome.runtime.sendMessage({ type: "COLLECT_YOUTUBE_BY_BUTTON" });
   }, [clearMessages]);
-
   // Footer 버튼 핸들러를 App에 연결
   useEffect(() => {
     if (setFooterClick) {
       setFooterClick(() => handleClick);
     }
   }, [setFooterClick]);
-
-
   // 렌더할 데이터 결정
   let fullText = "";
   if (renderSource === "cache" && cachedResult) {
@@ -203,15 +217,12 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
   } else if (renderSource === "lastMsg") {
     fullText = lastMessages;
   }
-
   //console.log(fullText);
   const rawCards = splitStreamCards(fullText);
   const cards = rawCards.map(parseCard);
-
   // TIMELINE 카드 중복 제거
   const filteredCards = [];
   const seenTimelineKeys = new Set();
-
   for (const card of cards) {
     if (card.type === "TIMELINE") {
       // lines가 없는 경우도 대비
@@ -223,33 +234,34 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
       filteredCards.push(card);
     }
   }
-
 //   for (const card of cards) {
 //     filteredCards.push(card);
 //   }
-
   return (
     <div className="youtube-summary-page custom-scrollbar">
       <div className="logo-section">
-        <img src={logo} className="logo" alt="logo" />
+        <img 
+          src={logo} 
+          className={`logo ${isLoading ? 'loading' : ''}`} 
+          alt="logo" 
+        />
       </div>
-
       <div className="result-section">
         {error && (
           <Card>
             <p style={{ color: 'red' }}>{error}</p>
           </Card>
         )}
-
         {filteredCards.length === 0 && !loading && !error && (
-          <Card>
-            <p>영상 분석중...</p>
+          <Card className="default-card">
+            {isLoading 
+              ? "영상 분석중..." 
+              : "어떤 영상을 찾아보고 계신가요?"
+            }
           </Card>
         )}
-
         {filteredCards.map((card, i) => {
         const cardClass = `card-${card.type.toLowerCase()}`; // card-comment, card-summary, card-timeline
-
         return (
           <Card key={i} className={cardClass}>
             {card.type === "COMMENT" && <div>{card.value}</div>}
@@ -257,12 +269,18 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
             {card.type === "TIMELINE" && (
               <div className="timeline-section">
                 {card.lines.map((line, idx) => {
-                  const time = line.slice(0, 5);
-                  const text = line.slice(5).trim();
-
+                  // 시간 형식 매칭: MM:SS 또는 H:MM:SS
+                  const timeMatch = line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)/);
+                  const time = timeMatch ? timeMatch[1] : '';
+                  const text = timeMatch ? line.slice(timeMatch[0].length).trim() : line.trim();
                   return (
                     <div key={idx} className="timeline-entry" >
-                      <span className="timeline-time">{time}</span>
+                      <span className="timeline-time"
+                      onClick={() => SeekTo(mmssToSeconds(time))}
+                      style={{ cursor: 'pointer' }}
+                      >
+                        {time}
+                        </span>
                       <span className="timeline-text">{text}</span>
                     </div>
                   );
@@ -272,7 +290,6 @@ export default function YoutubeSummary({ currentUrl, setLastMode, autoRefreshEna
           </Card>
         );
       })}
-
     </div>
   </div>
 );

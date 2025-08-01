@@ -13,10 +13,24 @@
 .youtube-summary-page .logo {
   vertical-align: bottom;
   padding: 0;
-  width: 130px;
+  width: 135px;
   height: 130px;
   will-change: filter;
   transition: filter 300ms;
+}
+
+.youtube-summary-page .logo.loading {
+  animation: youtubeLogoShadow 1.7s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px var(--yt-logo-shadow));
+}
+
+@keyframes youtubeLogoShadow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px var(--yt-logo-shadow));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--yt-logo-shadow));
+  }
 }
 
 .result-section {
@@ -27,6 +41,16 @@
   padding-bottom: 43px;
 }
 
+.youtube-summary-page .default-card {
+  background: var(--comment-bg);
+  letter-spacing: -0.015em;
+  box-shadow: 0 0 5px 1px var(--comment-shadow);
+  border-radius: 14px;
+  padding-top: 1.3rem;
+  padding-bottom: 1.3rem;
+  font-size: 1.1rem;
+}
+
 .youtube-summary-page .card-comment {
   background: var(--comment-bg);
   margin-bottom: 15px;
@@ -34,6 +58,7 @@
   letter-spacing: -0.015em;
   box-shadow: 0 0 5px 1px var(--comment-shadow);
   border-radius: 14px;
+  font-size: 1.03rem;
 }
 
 .youtube-summary-page .card-summary {
@@ -45,7 +70,6 @@
     var(--yt-sum3) 40%,
     var(--yt-sum4) 100%
   );
-  shadow: none;
   border-radius: 5px;
   border: none;
   color: var(--sum-text);
@@ -78,7 +102,7 @@
 }
 
 .timeline-time {
-  font-size: 1.03rem;
+  font-size: 1.04rem;
   font-weight: 500;
   color: var(--yt-accent);
   padding-left: 0.5rem;
@@ -87,7 +111,7 @@
 }
 
 .timeline-text {
-  font-size: 1.03rem;
+  font-size: 1.04rem;
   white-space: pre-wrap;
   word-break: keep-all;
   white-space: pre-wrap; /* 자동 줄바꿈 */
