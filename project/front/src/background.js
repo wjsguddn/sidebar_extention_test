@@ -53,7 +53,7 @@ async function handleBrowserAutoCollect(tabId, triggerType) {
       debounceTimer = null;
       return;
     }
-    if (url === lastSentUrl && now - lastSentTime < 10000) {
+    if (url === lastSentUrl && now - lastSentTime < 20000) {
       debounceTimer = null;
       return;
     }
@@ -77,7 +77,7 @@ async function handleBrowserAutoCollect(tabId, triggerType) {
       }
     }
     debounceTimer = null;
-  }, 2500);
+  }, 2000);
 }
 
 
@@ -115,22 +115,46 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 async function sendToBackend(data, triggerType, mode) {
   if (!data) return;
 
-  if (mode === "recommendation") { API = import.meta.env.VITE_API_BASE + "/collect/browser"; }
-  else if (mode === "youtube") { API = import.meta.env.VITE_API_BASE + "/collect/youtube"; }
+  if (mode === "recommendation") { 
+    API = import.meta.env.VITE_API_BASE + "/collect/browser"; 
+    // 요청 시작 알림
+    chrome.runtime.sendMessage({ type: "RECOMMENDATION_REQUEST_STARTED" });
+  }
+  else if (mode === "youtube") { 
+    API = import.meta.env.VITE_API_BASE + "/collect/youtube"; 
+    // 요청 시작 알림
+    chrome.runtime.sendMessage({ type: "YOUTUBE_REQUEST_STARTED" });
+  }
 
-  // JWT 읽기
-  chrome.storage.local.get(['token'], async (result) => {
+  // JWT와 설정값 읽기
+  chrome.storage.local.get(['token', 'contentType', 'contentPeriod'], async (result) => {
     const token = result.token;
+    
     try {
+      let requestBody = { 
+        ...data, 
+        trigger_type: triggerType
+      };
+
+      // 추천 모드에서만 설정값들 추가
+      if (mode === "recommendation") {
+        const contentType = result.contentType || 'default';
+        const contentPeriod = result.contentPeriod || 'none';
+        requestBody.content_type = contentType;
+        requestBody.content_period = contentPeriod;
+        console.log(`[sendToBackend] Data sent (trigger: ${triggerType}, mode: ${mode}, content_type: ${contentType}, content_period: ${contentPeriod})`);
+      } else {
+        console.log(`[sendToBackend] Data sent (trigger: ${triggerType}, mode: ${mode})`);
+      }
+
       await fetch(API, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": token ? `Bearer ${token}` : undefined
         },
-        body: JSON.stringify({ ...data, trigger_type: triggerType })
+        body: JSON.stringify(requestBody)
       });
-      console.log(`[sendToBackend] Data sent (trigger: ${triggerType}  mode: ${mode})`);
     } catch (e) {
       console.error("[sendToBackend] Failed", e);
     }
@@ -141,9 +165,15 @@ async function sendToBackend(data, triggerType, mode) {
 async function sendToBackendDoc(data, triggerType, pdfUrl) {
   if (!data) return;
 
-  // JWT 읽기
-  chrome.storage.local.get(['token'], async (result) => {
+  // 요청 시작 알림
+  chrome.runtime.sendMessage({ type: "DOCUMENT_REQUEST_STARTED" });
+
+  // JWT와 설정값 읽기
+  chrome.storage.local.get(['token', 'contentType', 'contentPeriod'], async (result) => {
     const token = result.token;
+    const contentType = result.contentType || 'default';
+    const contentPeriod = result.contentPeriod || 'none';
+    
     try {
       const blob = data;
 
@@ -151,6 +181,8 @@ async function sendToBackendDoc(data, triggerType, pdfUrl) {
       formData.append("file", blob, "document.pdf");
       formData.append("fast", "true");
       formData.append("pdf_url", pdfUrl);
+      formData.append("content_type", contentType);
+      formData.append("content_period", contentPeriod);
 
       const response = await fetch(import.meta.env.VITE_API_BASE + "/collect/doc", {
         method: "POST",
@@ -232,4 +264,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true; // async 응답
 }
 
+});
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "SEEK_TO") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab || !tab.id) return;
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: (seconds) => {
+          const video = document.querySelector('video');
+          if (video) {
+            video.currentTime = seconds;
+          }
+        },
+        args: [message.seconds]
+      });
+    });
+  }
 });
