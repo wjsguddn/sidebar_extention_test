@@ -13,10 +13,24 @@
 .document-summary-page .logo {
   vertical-align: bottom;
   padding: 0;
-  width: 130px;
+  width: 135px;
   height: 130px;
   will-change: filter;
   transition: filter 300ms;
+}
+
+.document-summary-page .logo.loading {
+  animation: documentLogoShadow 6.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px var(--doc-logo-shadow));
+}
+
+@keyframes documentLogoShadow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px var(--doc-logo-shadow));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--doc-logo-shadow));
+  }
 }
 
 .document-summary-page .result-section {
@@ -33,6 +47,7 @@
   letter-spacing: -0.015em;
   box-shadow: 0 0 5px 1px var(--comment-shadow);
   border-radius: 14px;
+  font-size: 1.03rem;
 }
 
 .result-section .mini-summary {
@@ -42,6 +57,8 @@
 
 .result-section .mini-summary .doc-ing-text{
   font-size: 1.1rem;
+  padding: 4px 0;
+  color: var(--text-primary);
 }
 
 .document-summary-page .final-summary {
@@ -53,12 +70,11 @@
     var(--doc-sum3) 40%,
     var(--doc-sum4) 100%
   );
-  shadow: none;
   border-radius: 5px;
   border: none;
   color: var(--sum-text);
   padding-top: 0.8rem;
-  /* white-space: pre-wrap; */
+  white-space: pre-wrap;
 }
 
 .document-summary-page .card-recommend{
@@ -72,7 +88,7 @@
 
 .document-summary-page .card-recommend .card-title {
   margin-bottom: 5px;
-  font-size: 1.07em;
+  font-size: 1.1em;
   font-weight: 500;
 }
 

@@ -115,17 +115,35 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
   const { messages, isConnected, isLoading, clearMessages } = useWebSocket();
   const summaryRef = useRef(null);
   const [sonarStarted, setSonarStarted] = useState(false);
+  const [isLoadingShadow, setIsLoadingShadow] = useState(false);
 
-  // background.js에서 RESET_WEBSOCKET_MESSAGE 메시지를 받으면 메시지 초기화
+  // 요청 시작 감지
   useEffect(() => {
     const listener = (msg, sender, sendResponse) => {
       if (msg.type === "RESET_WEBSOCKET_MESSAGE") {
         clearMessages();
       }
+      if (msg.type === "DOCUMENT_REQUEST_STARTED") {
+        setIsLoadingShadow(true);
+      }
     };
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [clearMessages]);
+
+  // 로딩 종료 감지 (summary_chunk 단계가 끝나고 다음 단계로 넘어갈 때)
+  useEffect(() => {
+    if (!isLoadingShadow || messages.length === 0) return;
+    
+    // summary_chunk가 아닌 다른 타입의 메시지가 있는지 확인
+    const hasNonSummaryChunkMessage = messages.some(msg => 
+      msg.type === 'final_summary_stream' || msg.type === 'sonar_stream'
+    );
+    
+    if (hasNonSummaryChunkMessage) {
+      setIsLoadingShadow(false);
+    }
+  }, [messages, isLoadingShadow]);
 
   const handleClick = useCallback(async () => {
     clearMessages();
@@ -228,7 +246,11 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
   return (
     <div className="document-summary-page custom-scrollbar">
       <div className="logo-section">
-        <img src={logo} className="logo" alt="logo" />
+        <img 
+          src={logo} 
+          className={`logo ${isLoadingShadow ? 'loading' : ''}`} 
+          alt="logo" 
+        />
       </div>
       <div className="result-section">
         <Card className="card-comment">
@@ -236,9 +258,17 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
             {/* 미니서머리 모드 */}
             {displayMode === 'mini' && !sonarStarted && (
               <div className="mini-summary">
-                <div className="doc-ing-text">문서 파악중...</div>
+                <div className="doc-ing-text">
+                  {isLoadingShadow 
+                    ? "문서 파악중..." 
+                    : "어떤 문서를 찾아보고 계신가요?"
+                  }
+                </div>
                 {miniSummary}
               </div>
+            )}
+            {cards.length === 0 && displayMode !== 'mini' && (
+              <div>문서 파악 완료!</div>
             )}
             {cards.map((card, i) =>
               card.type === "COMMENT" && (
@@ -251,7 +281,7 @@ export default function DocumentSummary({ currentUrl, setLastMode, autoRefreshEn
         {displayMode === 'final' && (
           <Card className="final-summary">
             <div className="document-summary-text">Document Summary</div>
-            {finalSummaryStream}
+            {finalSummaryStream.trimStart()}
           </Card>
         )}
 
