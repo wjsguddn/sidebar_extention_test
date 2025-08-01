@@ -5,6 +5,8 @@ package docssummary;
 message DocsSummaryRequest {
   string user_id = 1;
   string chunk = 2;  // 요약할 텍스트 조각(한 문단 등)
+  string content_type = 3; // 추천 컨텐츠 유형
+  string content_period = 4; // 컨텐츠 기간 필터
 }
 
 message DocsSummaryResponse {
