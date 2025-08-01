@@ -18,7 +18,7 @@
 .auto-refresh-toggle-btn.enabled {
     border: 1px solid var(--accent-primary) !important;
     background: var(--button-bg-hover);
-    box-shadow: 0 0 3px var(--accent-primary), inset 0 0 2px var(--accent-primary);
+    box-shadow: 0 0 10px var(--accent-primary), inset 0 0 5px var(--accent-primary);
 }
 
 .auto-refresh-toggle-btn .tooltip {
