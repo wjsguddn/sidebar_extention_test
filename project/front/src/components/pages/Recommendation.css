@@ -26,7 +26,7 @@
 
 @keyframes logoShadow {
   0%, 100% {
-    filter: drop-shadow(0 0 6px var(--rec-logo-shadow));
+    filter: drop-shadow(0 0 4px var(--rec-logo-shadow));
   }
   50% {
     filter: drop-shadow(0 0 12px var(--rec-logo-shadow));

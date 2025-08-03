@@ -20,13 +20,13 @@
 }
 
 .document-summary-page .logo.loading {
-  animation: documentLogoShadow 6.8s ease-in-out infinite;
+  animation: documentLogoShadow 9.35s ease-in-out infinite;
   filter: drop-shadow(0 0 6px var(--doc-logo-shadow));
 }
 
 @keyframes documentLogoShadow {
   0%, 100% {
-    filter: drop-shadow(0 0 6px var(--doc-logo-shadow));
+    filter: drop-shadow(0 0 4px var(--doc-logo-shadow));
   }
   50% {
     filter: drop-shadow(0 0 12px var(--doc-logo-shadow));
