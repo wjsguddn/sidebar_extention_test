@@ -241,10 +241,7 @@ export default function Recommendation({ currentUrl, setLastMode, autoRefreshEna
           <Card className="default-card">
             {isLoading 
               ? "웹 페이지 파악중..." 
-              : [
-                  "오늘은 무엇을 찾아보고 계신가요?",
-                  "어떤 페이지를 보고 계신가요?"
-                ][Math.floor(Math.random() * 2)]
+              : "오늘은 무엇을 찾아보고 계신가요?"
             }
           </Card>
         )}
