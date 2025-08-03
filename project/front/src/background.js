@@ -77,7 +77,7 @@ async function handleBrowserAutoCollect(tabId, triggerType) {
       }
     }
     debounceTimer = null;
-  }, 2000);
+  }, 1700);
 }
 
 
@@ -215,6 +215,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tabId = tabs[0]?.id;
       if (!tabId) return sendResponse({ error: "No active tab" });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const data = await collectBrowser(tabId);
       if (data) {
