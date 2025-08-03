@@ -113,7 +113,7 @@ const Menubar = ({ theme, toggleTheme, userInfo }) => {
       {showSettings && (
         <div className="profile-modal-overlay" onClick={handleCloseSettings}>
           <div className="profile-modal settings-modal" onClick={e => e.stopPropagation()}>
-            <div className="settings-title">환경설정</div>
+            <div className="settings-title">설정</div>
             
             <div className="settings-section">
               <div className="settings-label">추천 컨텐츠 유형</div>
@@ -122,7 +122,7 @@ const Menubar = ({ theme, toggleTheme, userInfo }) => {
                 value={contentType}
                 onChange={(e) => handleContentTypeChange(e.target.value)}
               >
-                <option value="default">기본</option>
+                <option value="default">다양화</option>
                 <option value="youtube">유튜브</option>
                 <option value="news">뉴스</option>
                 <option value="blog">블로그/포스팅</option>
@@ -139,10 +139,10 @@ const Menubar = ({ theme, toggleTheme, userInfo }) => {
                 onChange={(e) => handleContentPeriodChange(e.target.value)}
               >
                 <option value="none">없음</option>
-                <option value="week">일주일</option>
-                <option value="month">한달</option>
-                <option value="half-year">반년</option>
+                <option value="month">1개월</option>
+                <option value="6months">6개월</option>
                 <option value="year">1년</option>
+                <option value="2years">2년</option>
               </select>
             </div>
             
