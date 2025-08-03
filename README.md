@@ -1,85 +1,148 @@
-# Sidebar Extension Project
+# PenseurAI - AI 기반 브라우저 확장 프로그램
 
-브라우저 확장 프로그램(React + Vite) + FastAPI 백엔드 + LLM 워커(Python, Kafka) 기반의 실시간 추천/요약 서비스.
+Chrome Extension (React 19 + Vite) + FastAPI 백엔드 + 마이크로서비스 아키텍처 기반의 실시간 AI 요약/추천 서비스.
 
----
+## 개요
 
-## 1. 환경 변수 설정
+PenseurAI는 브라우저에서 YouTube 동영상 요약, PDF/문서 분석, 개인화된 콘텐츠 추천을 제공하는 AI 기반 Chrome 확장 프로그램입니다.
 
-### 1-1. `/project/.env` (백엔드/워커용)
+### 주요 기능
+- **YouTube 동영상 요약**: 자막과 챕터를 분석하여 실시간 요약 제공
+- **문서 분석**: PDF 파일의 텍스트 추출 및 요약(추천천)
+- **실시간 스트리밍**: AI 처리 결과를 실시간으로 사용자에게 전달
 
-```
-KAFKA_BOOTSTRAP=kafka:9092
+## 기술 스택
 
+### 프론트엔드
+- **React 19**
+- **Vite**: 빠른 빌드 도구
+- **Chrome Extension Manifest V3**: 최신 확장 프로그램 표준
+- **WebSocket**
+
+### 백엔드
+- **FastAPI**
+- **SQLAlchemy**: ORM
+- **MySQL**
+- **JWT + Google OAuth**
+
+### 마이크로서비스
+- **gRPC**: 마이크로 서비스 간 고성능 통신
+- **Protocol Buffers**: 타입 안전한 데이터 직렬화
+- **Docker**
+
+### AI 서비스
+- **OpenAI GPT**: YouTube 요약
+- **Perplexity API**: 추천
+- **WatsonX**: 문서 요약 (LLAMA3)
+
+
+
+
+### 1. 환경 변수 설정
+
+#### 백엔드용 환경 변수 (`/project/.env`)
+```bash
+# AI 서비스 API 키
 OPENAI_API_KEY=your_openai_api_key
 PERPLEXITY_API_KEY=your_perplexity_api_key
+WATSONX_API_KEY=your_watsonx_api_key
+WATSONX_PROJECT_ID=your_watsonx_project_id
 
+# 데이터베이스
 DATABASE_URL=mysql+pymysql://user:user_password@mysql:3306/penseur_db
 
+# Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-EXTENSION_ID=your_extension_id
+# JWT
+JWT_SECRET_KEY=your_jwt_secret_key
 
-JWT_SECRET_KEY=your_jwt_secret
+# 확장 프로그램
+EXTENSION_ID=your_extension_id
 ```
 
-### 1-2. `/project/front/.env` (프론트엔드용)
+### 2. 개발 환경 실행
 
-- **개발용(.env.local)**
-  ```
-  VITE_API_BASE=http://localhost:8000
-  VITE_GOOGLE_CLIENT_ID=your_google_client_id
-  ```
-- **배포용**
-  ```
-  VITE_API_BASE=https://your-production-backend-url
-  VITE_GOOGLE_CLIENT_ID=your_google_client_id
-  ```
-
-※ `.env.local` 대신 `.env`도 무관.  
-※ API 주소는 실제 백엔드 주소와 일치해야 함.
-
----
-
-## 2. 실행
-
-### 2-1. 프론트(React)
-
+#### 프론트엔드 (Chrome Extension)
 ```bash
 cd project/front
-npm install         # 초기 한번
-
-npm run dev         # 개발 서버 실행
-# 또는
-npm run build       # 배포용 빌드(dist 폴더 생성)
+npm install
+npm run dev
 ```
 
-### 2-2. 백엔드/LLM 워커/Kafka (Docker Compose)
+#### 백엔드 및 마이크로서비스
+```bash
+cd project
+docker-compose up --build
+```
 
-1. ```bash
-   cd project
-   ```
-2. **Docker Desktop 실행**  
-   윈도우/맥은 Docker Desktop 실행, 리눅스는 Docker 데몬만 실행되어 있으면 됨
+### 3. Chrome Extension 설치
+
+1. Chrome에서 `chrome://extensions/` 접속
+2. "개발자 모드" 활성화
+3. "압축해제된 확장 프로그램을 로드합니다" 클릭
+4. `project/front/dist` 폴더 선택
+
+## 📁 프로젝트 구조
+
+```
+project/
+├── front/                    # Chrome Extension (React + Vite)
+│   ├── src/
+│   │   ├── components/      # React 컴포넌트
+│   │   ├── utils/          # 유틸리티 함수
+│   │   └── background.js   # Service Worker
+│   └── public/             # 정적 파일
+├── backend/                 # FastAPI 백엔드
+│   ├── app/
+│   │   ├── routers/        # API 라우터
+│   │   ├── grpc_clients/   # gRPC 클라이언트
+│   │   └── main.py         # FastAPI 앱
+│   └── protos/             # Protocol Buffers 정의
+├── llm-worker-youtube/      # YouTube 요약 서비스
+├── llm-worker-docs/         # 문서 요약 서비스
+├── llm-worker-rec/          # 추천 시스템 서비스
+└── docker-compose.yml       # Docker Compose 설정
+```
 
 
-3. **컨테이너 실행 및 종료**
-   ```bash
-   docker-compose up --build
-   ```
-   - FastAPI, llm-worker, Kafka, Zookeeper 등 모든 서비스 컨테이너 실행.
-   - 종료시엔 ctrl+c 후에
-   ```bash
-   docker-compose down
-   ```
+### API 문서
+- FastAPI 자동 생성 문서: `http://localhost:8000/docs`
+- ReDoc 문서: `http://localhost:8000/redoc`
 
----
+### 디버깅
+- Chrome DevTools: 확장 프로그램 디버깅
+- Docker 로그: `docker-compose logs -f [service-name]`
 
-## 3. 기타 참고사항
+### 테스트
+```bash
+# 프론트엔드 테스트
+cd project/front
+npm run lint
 
-- **Kafka, Zookeeper 등**은 `docker-compose.yml`로 자동 실행.
-- **프론트엔드와 백엔드의 API 주소**(`VITE_API_BASE`)가 일치해야 정상 동작.
-- **배포 시**:  
-  - 프론트엔드 빌드 결과(`/dist`)를 서비스 서버에 배포  
-  - 백엔드/워커는 서버 환경에 맞게 Docker로 실행
+# 백엔드 테스트
+cd project/backend
+python -m pytest
+```
+
+## 배포
+
+### 프로덕션 환경
+1. 환경 변수 설정 (프로덕션 값으로)
+2. 프론트엔드 빌드: `npm run build`
+3. Docker 컨테이너 배포
+4. Reverse Proxy 설정 (Nginx 권장)
+
+### 환경별 설정
+- **개발**: `docker-compose up --build`
+- **스테이징**: 환경 변수 변경 후 동일한 명령어
+- **프로덕션**: Docker Swarm 또는 Kubernetes 권장
+
+## 기여
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
