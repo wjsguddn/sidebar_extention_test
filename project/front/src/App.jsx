@@ -22,7 +22,7 @@ export default function App() {
     const [currentUrl, setCurrentUrl] = useState(null);
     const [pageMode, setPageMode] = useState(PAGE_MODES.DEFAULT);
     const [lastMode, setLastMode] = useState(PAGE_MODES.DEFAULT);
-    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
     const getInitialTheme = () => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) return savedTheme;
