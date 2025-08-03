@@ -33,16 +33,15 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
     elif content_type == "news":
         search_domain_filter = ["joongang.co.kr", "chosun.com", "donga.com", "seoul.co.kr", "hankyung.com", "mk.co.kr", "kmib.co.kr", "imnews.imbc.com", "ytn.co.kr", "hankookilbo.com"]
     elif content_type == "blog":
-        search_domain_filter = ["tistory.com", "blog.naver.com", "brunch.co.kr", "tumblr.com", "medium.com", "velog.io"]
+        # search_domain_filter = ["tistory.com", "blog.naver.com", "brunch.co.kr", "tumblr.com", "medium.com", "velog.io"]
+        search_domain_filter = None
     elif content_type == "academic":
-        search_domain_filter = ["dbpia.co.kr", "riss.kr", "kci.go.kr", "koreascience.or.kr","github.com", "medium.com", "arxiv.org", "krm.or.kr", "nrf.re.kr"]
+        # search_domain_filter = ["dbpia.co.kr", "riss.kr", "kci.go.kr", "koreascience.or.kr","github.com", "medium.com", "arxiv.org", "krm.or.kr", "nrf.re.kr"]
+        search_domain_filter = None
     elif content_type == "wiki":
         search_domain_filter = ["ko.wikipedia.org", "namu.wiki"]
 
-    # content_period에 따른 search_mode 설정
     search_mode = "web"
-    if content_period in ["week", "month", "half-year", "year"]:
-        search_mode = "web"  # 기간 필터링은 Perplexity에서 직접 지원하지 않으므로 web 모드 사용
 
     # content_period에 따른 search_after_date_filter 설정
     search_after_date_filter = None
@@ -51,14 +50,14 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
         
         today = datetime.now()
         
-        if content_period == "week":
-            target_date = today - timedelta(days=7)
-        elif content_period == "month":
+        if content_period == "month":
             target_date = today - timedelta(days=30)
-        elif content_period == "half-year":
+        elif content_period == "6months":
             target_date = today - timedelta(days=180)
         elif content_period == "year":
             target_date = today - timedelta(days=365)
+        elif content_period == "2years":
+            target_date = today - timedelta(days=730)
         else:
             target_date = today
         
@@ -73,22 +72,22 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
     domain_instruction = ""
     if content_type != "default":
         domain_instruction = f"""
-추천 검색 범위: {content_type} 유형의 콘텐츠에만 집중하여 추천해주세요.
-- youtube: 영상 콘텐츠
+- youtube: 영상 콘텐츠 (반드시 실제 컨텐츠가 존재하는 영상으로 추천해야함. 만약 갤럭시 Z 폴드7에 관한 주제라면 반드시 https://www.youtube.com/watch?v=YQ3rs9uy0pM 이 링크를 추천에 포함)
 - news: 뉴스 및 기사
 - blog: 블로그 및 포스팅
 - academic: 학술 논문 및 연구 자료와 문서
 - wiki: 나무위키(namu.wiki) 및 위키피디아(ko.wikipedia.org)의 결과만 제공
+현재 요청 도메인: 이번 답변에서는 {content_type} 유형의 콘텐츠만 집중하여 추천해주세요.
 """
 
     period_instruction = ""
     if content_period != "none":
         period_instruction = f"""
-추천 기간 범위: {content_period} 최대한 기간 내의 최신 콘텐츠로 추천을 구성해주세요.
-- week: 최근 1주일 내 콘텐츠
-- month: 최근 1개월 내 콘텐츠  
-- half-year: 최근 6개월 내 콘텐츠
-- year: 최근 1년 내 콘텐츠
+추천 기간 범위: {content_period} 최대한 기간 내의 콘텐츠로 추천을 구성해주세요.
+- month: 최근 1개월 이내 콘텐츠
+- 6months: 최근 6개월 이내 콘텐츠  
+- year: 최근 1년 이내 콘텐츠
+- 2years: 최근 2년 이내 콘텐츠
 """
 
     payload = {
@@ -100,7 +99,7 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
                 "content": f"""
 1. System
 당신은 사용자의 브라우저 활동을 실시간으로 분석하여, 현재 주목하고 있는 주제를 추론하고 그에 맞는 콘텐츠를 큐레이션하는 브라우저 기반 AI 캐릭터 에이전트입니다.
-입력 될 정보는 사용자의 현재 웹페이지 정보(URL, Page Title)이며, 당신이 주어진 URL을 통해 직접 해당 페이지를 탐색하고 사용자가 어떤 주제(대상)에 가장 관심이 있는지를 파악해야합니다.
+입력 될 정보는 사용자의 현재 웹페이지 정보(URL, Page Title, Page Text)이며, 당신이 주어진 URL을 통해 직접 해당 페이지를 탐색하고 사용자가 어떤 주제(대상)에 가장 관심이 있는지를 파악해야합니다.
 해당 웹 페이지 정보들을 기반으로 사용자가 현재 가장 관심을 두고 있을 것으로 예상되는 주제(대상)를 추론 및 선정하고 사용자의 행동에 대한 comment, 해당 주제에 대한 간략한 summary, 사용자의 현재 관심사를 기반으로 사용자가 관심있어 할만한 컨텐츠 recommend가 이루어져야 한다.이를 바탕으로 캐릭터가 직접 행동 코멘트와 주제 요약, 관련 추천 콘텐츠를 제공합니다.
 출력 포맷을 반드시 엄격히 지키세요.
 
@@ -128,9 +127,9 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
 - `|||` 기호를 사용하여 항목 타입과 내용, 필드를 구분
 - 출력 시 링크는 다음 형식으로 표기
 - https://portal.withorb.com/view?token=ImNSdHZ2akpEZVltTGo1aVQi.Gj2kziogRmdvF_Mn4ONENvoaOPo
-- 실제로 컨텐츠가 존재하고 접근 가능한, 검증된 링크만 제공해야함
-- input으로 제공받은 URL과 동일한 URL은 절대 다시 제공해서는 안됨
-- 참고 링크의 인덱스를 표현하는 [1] [2]와 같은 표현은, 그 어디에도 절대 사용하지 마시오
+- 실제로 컨텐츠가 존재하고 접근 가능한, 검증된 링크인지 확인 후에 제공해야함(중요)
+- input으로 제공받은 URL과 동일한 URL은 절대 다시 제공해서는 안됨(중요)
+- 참고 링크의 인덱스를 표현하는 [1] [2]와 같은 표현은, 그 어디에도 절대 사용하지 마시오(중요)
 
 6. 항목 타입별 정의
 - `__COMMENT`
@@ -154,11 +153,11 @@ def generate_recommendations(url: str, title: str, text: str, content_type: str 
 8. Output Format (예시)
 __COMMENT|||Hmm… 이 주제에 깊이 빠져든 듯하군요. 생각해볼 가치가 있어 보여요.
 __SUMMARY|||MCP는 반도체의 Multi Chip Package와 인공지능 분야의 Model Context Protocol을 의미합니다. 각각 칩 패키징 기술과 AI 모델 간 문맥 공유 프로토콜로 활용됩니다.
-__RECOMMEND|||[Anthropic API]|||🤖 Claude · AI모델 · 프로토콜|||AI 모델 문맥 공유를 다룬 프로토콜 개요예요.|||https://www.anthropic.co/...
 __RECOMMEND|||[IEEE 논문] Multi Chip Package 설계|||🧩 반도체 · 패키징 · 설계|||칩 내부 구조를 진지하게 풀어낸 논문이에요.|||https://ieeexplore.ieee.org/...
 __RECOMMEND|||[YouTube] MCP 쉽게 이해하기|||🎥 MCP · 직관적설명 · 입문자용|||쉽지만 본질을 짚어주는 영상이에요.|||https://www.youtube.com/wa...
 __RECOMMEND|||[HuggingFace 블로그] MCP란?|||🧠 문맥처리 · AI구조 · 추론기반|||문맥 기반 AI 구조에 대해 생각하게 하죠.|||https://huggingface.co/blog/mcp...
 __RECOMMEND|||[TechCrunch] 왜 MCP인가|||🌐 기술융합 · 산업동향 · 의의|||두 산업의 교차점에서 의미를 찾아요.|||https://techcrunch.com/mcp...
+__RECOMMEND|||[Anthropic API]|||🤖 Claude · AI모델 · 프로토콜|||AI 모델 문맥 공유를 다룬 프로토콜 개요예요.|||https://www.anthropic.co/...
 """
             },
             {
@@ -166,7 +165,7 @@ __RECOMMEND|||[TechCrunch] 왜 MCP인가|||🌐 기술융합 · 산업동향 · 
                 "content": prompt
             }
         ],
-        "max_tokens": 2048,
+        "max_tokens": 1000,
         "temperature": 0.7,
         "stream": True
     }
