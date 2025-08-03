@@ -425,14 +425,14 @@ def generate_recommendations(text: str, content_type: str = "default", content_p
     if content_period != "none":
         from datetime import datetime, timedelta
         today = datetime.now()
-        if content_period == "week":
-            target_date = today - timedelta(days=7)
-        elif content_period == "month":
+        if content_period == "month":
             target_date = today - timedelta(days=30)
-        elif content_period == "half-year":
+        elif content_period == "6months":
             target_date = today - timedelta(days=180)
         elif content_period == "year":
             target_date = today - timedelta(days=365)
+        elif content_period == "2years":
+            target_date = today - timedelta(days=730)
         else:
             target_date = today
         # MM/DD/YYYY 형식으로 변환 (Windows/Linux 호환)
@@ -459,10 +459,10 @@ def generate_recommendations(text: str, content_type: str = "default", content_p
     if content_period != "none":
         period_instruction = f"""
 추천 기간 범위: {content_period} 최대한 기간 내의 최신 콘텐츠만으로 추천을 구성해주세요.
-- Week: 최근 1주일 내 콘텐츠
-- Month: 최근 1개월 내 콘텐츠  
-- 반년: 최근 6개월 내 콘텐츠
-- 1년: 최근 1년 내 콘텐츠
+- month: 최근 1개월 이내 콘텐츠
+- 6months: 최근 6개월 이내 콘텐츠  
+- year: 최근 1년 이내 콘텐츠
+- 2years: 최근 2년 이내 콘텐츠
 """
 
     payload = {
