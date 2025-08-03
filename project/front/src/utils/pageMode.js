@@ -1,8 +1,7 @@
 export function getPageMode(url) {
   if (!url) return "default";
   if (
-    url.includes('login') || url.includes('signup') || url.includes('signin') ||
-    url.includes('auth') || url.includes('password') || url.includes('account')
+    url.includes('login') || url.includes('signup') || url.includes('signin') || url.includes('password') || url.includes('account')
   ) {
     return "sensitive";
   }
