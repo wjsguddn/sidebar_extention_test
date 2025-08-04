@@ -185,6 +185,22 @@ const userInfo = {
   email: payload.email,
   picture: payload.picture
 };
+
+// 토큰 만료 확인
+const isExpired = isTokenExpired(accessToken);
+
+// 자동 토큰 갱신
+const newAccessToken = await refreshAccessToken(refreshToken);
+
+// 인증된 API 요청
+const response = await makeAuthenticatedRequest('/api/endpoint', {
+  method: 'POST',
+  body: JSON.stringify(data)
+});
+
+// 로그아웃
+await logout(refreshToken);
+clearTokens();
 ```
 
 ## Chrome Extension 특화 기능
