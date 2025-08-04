@@ -1,6 +1,6 @@
 # 문서 요약 서비스 (llm-worker-docs)
 
-PDF, DOC, DOCX 파일의 텍스트를 추출하고 AI 기반 요약을 제공하는 gRPC 마이크로서비스입니다.
+PDF, DOC, DOCX 파일의 텍스트를 추출하고 AI 기반 요약을 제공하는 gRPC 마이크로서비스
 
 ## 주요 기능
 

@@ -1,6 +1,6 @@
 # YouTube 요약 서비스 (llm-worker-youtube)
 
-YouTube 동영상의 자막과 챕터를 분석하여 AI 기반 실시간 요약을 제공하는 gRPC 마이크로서비스입니다.
+YouTube 동영상의 자막과 챕터를 분석하여 AI 기반 실시간 요약을 제공하는 gRPC 마이크로서비스
 
 ## 주요 기능
 

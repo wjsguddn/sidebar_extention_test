@@ -1,6 +1,6 @@
 # PenseurAI Chrome Extension
 
-React 19 + Vite 기반의 AI 브라우저 확장 프로그램입니다. YouTube 동영상 요약, 문서 분석, 개인화된 추천 기능을 제공합니다.
+React 19 + Vite 기반의 AI 브라우저 확장 프로그램. YouTube 동영상 요약, 문서 분석, 개인화된 추천 제공.
 
 ## 주요 기능
 
