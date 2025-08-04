@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String, Integer, DateTime, Enum
+from sqlalchemy import Column, String, Integer, DateTime, Enum, Boolean
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from .db import Base
 import enum
 
@@ -14,6 +15,9 @@ class User(Base):
     email = Column(String(256), unique=True, index=True)
     name = Column(String(128))
     picture = Column(String(512))
+    
+    # RefreshToken과의 관계
+    refresh_tokens = relationship("RefreshToken", back_populates="user")
 
 
 class UserModeStats(Base):
@@ -37,3 +41,15 @@ class UserModeStats(Base):
     # 타임스탬프
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(128), nullable=False, index=True)
+    token_hash = Column(String(64), nullable=False, unique=True)  # SHA-256 해시
+    expires_at = Column(DateTime, nullable=False)
+    is_revoked = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+    
+    # User와의 관계
+    user = relationship("User", back_populates="refresh_tokens")

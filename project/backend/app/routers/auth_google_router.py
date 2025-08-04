@@ -4,10 +4,12 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import requests as py_requests
 import os, jwt
+import hashlib
+import secrets
 from datetime import datetime, timedelta
 
 from ..db import get_db
-from ..models import User
+from ..models import User, RefreshToken
 
 auth_google_router = APIRouter()
 
@@ -36,6 +38,51 @@ def get_or_create_user(db, email, sub, name=None, picture=None):
             db.commit()
             db.refresh(user)
     return user
+
+def hash_token(token: str) -> str:
+    """토큰을 SHA-256으로 해시화"""
+    hash_object = hashlib.sha256(token.encode('utf-8'))
+    return hash_object.hexdigest()
+
+def create_access_token(user: User) -> str:
+    """Access token 생성 (1시간)"""
+    payload = {
+        "user_id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "picture": user.picture,
+        "type": "access",
+        "exp": datetime.utcnow() + timedelta(hours=1),  # 1시간으로 변경
+        "iat": datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm="HS256")
+
+def create_refresh_token(user: User) -> str:
+    """Refresh token 생성 (30일)"""
+    payload = {
+        "user_id": user.id,
+        "type": "refresh",
+        "exp": datetime.utcnow() + timedelta(days=30),
+        "iat": datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm="HS256")
+
+def save_refresh_token(user_id: str, refresh_token: str, db: Session):
+    """Refresh token을 해시화하여 DB에 저장"""
+    token_hash = hash_token(refresh_token)
+    payload = jwt.decode(refresh_token, JWT_SECRET_KEY, algorithms=["HS256"])
+    expires_at = datetime.utcfromtimestamp(payload["exp"])
+    
+    refresh_token_record = RefreshToken(
+        user_id=user_id,
+        token_hash=token_hash,
+        expires_at=expires_at,
+        is_revoked=False
+    )
+    
+    db.add(refresh_token_record)
+    db.commit()
+    return refresh_token_record
 
 @auth_google_router.post("/auth/google")
 async def google_auth(request: Request, db: Session = Depends(get_db)):
@@ -83,13 +130,80 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
     user = get_or_create_user(db, email, sub, name, picture)
 
     # JWT 발급
-    jwt_payload = {
-        "user_id": user.id,
-        "email": user.email,
-        "name": user.name,
-        "picture": user.picture,
-        "exp": datetime.utcnow() + timedelta(hours=24)
-    }
-    my_jwt = jwt.encode(jwt_payload, JWT_SECRET_KEY, algorithm="HS256")
+    access_token = create_access_token(user)
+    refresh_token = create_refresh_token(user)
 
-    return {"token": my_jwt, "user": {"id": user.id, "email": user.email}}
+    save_refresh_token(user.id, refresh_token, db)
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+@auth_google_router.post("/auth/refresh")
+async def refresh_token(request: Request, db: Session = Depends(get_db)):
+    """Refresh token으로 새로운 access token 발급"""
+    body = await request.json()
+    refresh_token = body.get("refresh_token")
+    
+    if not refresh_token:
+        raise HTTPException(status_code=400, detail="Refresh token required")
+    
+    try:
+        # 1. JWT 자체 검증
+        payload = jwt.decode(refresh_token, JWT_SECRET_KEY, algorithms=["HS256"])
+        
+        # 2. 토큰 타입 확인
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        # 3. 만료 확인
+        if datetime.utcfromtimestamp(payload["exp"]) < datetime.utcnow():
+            raise HTTPException(status_code=401, detail="Token expired")
+        
+        # 4. DB에서 토큰 무효화 여부 확인
+        user_id = payload.get("user_id")
+        token_hash = hash_token(refresh_token)
+        
+        token_record = db.query(RefreshToken).filter(
+            RefreshToken.user_id == user_id,
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.is_revoked == False,
+            RefreshToken.expires_at > datetime.utcnow()
+        ).first()
+        
+        if not token_record:
+            raise HTTPException(status_code=401, detail="Token revoked or not found")
+        
+        # 5. 새로운 Access Token 발급
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        new_access_token = create_access_token(user)
+        
+        return {"access_token": new_access_token}
+        
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@auth_google_router.post("/auth/logout")
+async def logout(request: Request, db: Session = Depends(get_db)):
+    """로그아웃 - refresh token 무효화"""
+    body = await request.json()
+    refresh_token = body.get("refresh_token")
+    
+    if refresh_token:
+        try:
+            token_hash = hash_token(refresh_token)
+            token_record = db.query(RefreshToken).filter(
+                RefreshToken.token_hash == token_hash
+            ).first()
+            
+            if token_record:
+                token_record.is_revoked = True
+                db.commit()
+        
+        except Exception:
+            pass  # 토큰이 유효하지 않아도 로그아웃은 성공으로 처리
+    
+    return {"message": "Logged out successfully"}
